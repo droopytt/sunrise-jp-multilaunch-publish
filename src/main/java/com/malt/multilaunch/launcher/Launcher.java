@@ -46,7 +46,7 @@ public abstract class Launcher<T extends APIResponse> {
         if (accounts.size() < 2) {
             return;
         }
-        if (rectangles.size() != accounts.size()) {
+        if (rectangles.size() < accounts.size()) {
             LOG.warn(
                     "Had {} rectangles but {} accounts than processes to resize, returning.",
                     rectangles.size(),
