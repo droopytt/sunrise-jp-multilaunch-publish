@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.malt.multilaunch.Account;
 import com.malt.multilaunch.Config;
+import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.jna.WindowUtils;
 import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.launcher.SunriseJPLauncher;
@@ -70,7 +71,8 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
     public UltiLauncher() {
         this.config = readConfig();
         multiControllerService = MultiControllerService.createDefault(config);
-        launcher = new SunriseJPLauncher(resolvePath(), multiControllerService);
+        var coreAssigner = CoreAssigner.createWithStartingCore(config.startingCore());
+        launcher = new SunriseJPLauncher(resolvePath(), multiControllerService, coreAssigner);
         accounts = findAccounts(launcher);
         activeAccountManager = ActiveAccountManager.create();
         windowSwapService = new WindowSwapService(activeAccountManager, multiControllerService);
@@ -95,14 +97,23 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         if (!Files.exists(configPath)) {
             try {
                 configPath.toFile().createNewFile();
-                var value = new Config(true, false);
+                var value = new Config(true, false, 1);
                 OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), value);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
         try {
-            return OBJECT_MAPPER.readValue(configPath.toFile(), Config.class);
+            var config = OBJECT_MAPPER.readValue(configPath.toFile(), Config.class);
+            if (config.startingCore() >= Runtime.getRuntime().availableProcessors()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "You cannot assign %d as a starting core as that core does not exist. Setting to default of 1."
+                                .formatted(config.startingCore()));
+                config.setStartingCore(1);
+                saveConfigToFile();
+            }
+            return config;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

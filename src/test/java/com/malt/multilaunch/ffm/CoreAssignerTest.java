@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class CoreAssignerTest {
 
     @Test
-    public void testAssignments() {
+    public void testSimpleAssignments() {
         var numCores = 4;
         var coreAssigner = CoreAssigner.create(numCores);
 
@@ -28,5 +28,34 @@ class CoreAssignerTest {
 
         coreAssigner.removeAssignedCore(210);
         assertThat(coreAssigner.getNextAvailableCore(500)).isEqualTo(0);
+    }
+
+    @Test
+    public void testAssignmentsWithDefinedStartingCore() {
+        var numCores = 8;
+        var startingCore = 3;
+        var coreAssigner = CoreAssigner.createWithStartingCore(numCores, startingCore);
+
+        assertThat(coreAssigner.assignedCores()).isEqualTo(new long[] {0, 0, 0, 0, 0, 0, 0, 0});
+
+        var nextCore = coreAssigner.getNextAvailableCore(210);
+        assertThat(nextCore).isEqualTo(3);
+        assertThat(coreAssigner.assignedCores()).isEqualTo(new long[] {0, 0, 0, 210, 0, 0, 0, 0});
+
+        for (int i = startingCore + 1; i < numCores; i++) {
+            var pid = ThreadLocalRandom.current().nextInt();
+            assertThat(coreAssigner.getNextAvailableCore(pid)).isEqualTo(i);
+        }
+
+        for (int i = 0; i < startingCore; i++) {
+            var pid = ThreadLocalRandom.current().nextInt();
+            assertThat(coreAssigner.getNextAvailableCore(pid)).isEqualTo(i);
+        }
+
+        var nextAvailableCore = coreAssigner.getNextAvailableCore(200);
+        assertThat(nextAvailableCore).isEqualTo(startingCore);
+
+        coreAssigner.removeAssignedCore(210);
+        assertThat(coreAssigner.getNextAvailableCore(500)).isEqualTo(3);
     }
 }

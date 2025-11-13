@@ -9,13 +9,16 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 public class Config {
     private boolean enableMultiControllerIntegration;
     private boolean swapMultiControllerAssignmentsOnWindowSwap;
+    private int startingCore;
 
     public Config(
             @JsonProperty("enableMultiControllerIntegration") boolean enableMultiControllerIntegration,
             @JsonProperty("swapMultiControllerAssignmentsOnWindowSwap")
-                    boolean swapMultiControllerAssignmentsOnWindowSwap) {
+                    boolean swapMultiControllerAssignmentsOnWindowSwap,
+            @JsonProperty("startingCore") int startingCore) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
+        this.startingCore = startingCore;
     }
 
     @JsonGetter
@@ -26,6 +29,15 @@ public class Config {
     @JsonGetter
     public boolean swapMultiControllerAssignmentsOnWindowSwap() {
         return swapMultiControllerAssignmentsOnWindowSwap;
+    }
+
+    @JsonGetter
+    public int startingCore() {
+        return startingCore;
+    }
+
+    public void setStartingCore(int startingCore) {
+        this.startingCore = startingCore;
     }
 
     @JsonSetter

@@ -24,9 +24,10 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
     private static final Logger LOG = LoggerFactory.getLogger(SunriseJPLauncher.class);
     private final CoreAssigner coreAssigner;
 
-    public SunriseJPLauncher(Path workingDir, MultiControllerService multiControllerService) {
+    public SunriseJPLauncher(
+            Path workingDir, MultiControllerService multiControllerService, CoreAssigner coreAssigner) {
         super(workingDir, multiControllerService);
-        coreAssigner = CoreAssigner.create();
+        this.coreAssigner = coreAssigner;
     }
 
     @Override

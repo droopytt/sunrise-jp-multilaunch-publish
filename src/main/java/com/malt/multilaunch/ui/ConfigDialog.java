@@ -8,6 +8,7 @@ public class ConfigDialog extends JDialog {
     private final Config config;
     private JCheckBox multiControllerIntegrationCheckbox;
     private JCheckBox moveControllerAssignmentsWithSwaps;
+    private JTextField startingCore;
     private JButton saveButton;
 
     private boolean saved = false;
@@ -52,6 +53,16 @@ public class ConfigDialog extends JDialog {
         add(moveControllerAssignmentsWithSwaps, gbc);
 
         gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weightx = 0;
+        add(new JLabel("Starting core for affinity assignment (Requires restart):"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        startingCore = new JTextField();
+        add(startingCore, gbc);
+
+        gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(15, 10, 10, 10);
@@ -63,6 +74,7 @@ public class ConfigDialog extends JDialog {
     private void populateFields() {
         multiControllerIntegrationCheckbox.setSelected(config.enableMultiControllerIntegration());
         moveControllerAssignmentsWithSwaps.setSelected(config.swapMultiControllerAssignmentsOnWindowSwap());
+        startingCore.setText(Integer.toString(config.startingCore()));
     }
 
     private void setupListeners() {
@@ -75,6 +87,13 @@ public class ConfigDialog extends JDialog {
         var multiControllerSwaps = moveControllerAssignmentsWithSwaps.isSelected();
         config.setEnableMultiControllerIntegration(multiControllerIntegration);
         config.setSwapMultiControllerAssignmentsOnWindowSwap(multiControllerSwaps);
+        try {
+            config.setStartingCore(Integer.parseInt(startingCore.getText()));
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Could not parse value for starting core %s. Value unchanged.".formatted(startingCore.getText()));
+        }
         saved = true;
         dispose();
     }
