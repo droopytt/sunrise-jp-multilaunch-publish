@@ -9,23 +9,11 @@ import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.launcher.SunriseJPLauncher;
 import com.malt.multilaunch.login.APIResponse;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
-import org.jnativehook.GlobalScreen;
-import org.jnativehook.NativeHookException;
-import org.jnativehook.keyboard.NativeKeyEvent;
-import org.jnativehook.keyboard.NativeKeyListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,8 +24,16 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
-import static java.util.stream.Collectors.joining;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import org.jnativehook.GlobalScreen;
+import org.jnativehook.NativeHookException;
+import org.jnativehook.keyboard.NativeKeyEvent;
+import org.jnativehook.keyboard.NativeKeyListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends JFrame {
     private static final Logger LOG = LoggerFactory.getLogger(UltiLauncher.class);
@@ -155,8 +151,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         });
         var accounts = new ArrayList<Account>();
         try {
-            accounts = OBJECT_MAPPER.readValue(accountFilePath.toFile(), new TypeReference<>() {
-            });
+            accounts = OBJECT_MAPPER.readValue(accountFilePath.toFile(), new TypeReference<>() {});
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Could not load accounts - ensure JSON format is filled out");
         }
@@ -205,7 +200,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
 
         setJMenuBar(menuBar);
 
-        var columnNames = new String[]{"Login?", "Toon", "End?"};
+        var columnNames = new String[] {"Login?", "Toon", "End?"};
         tableModel = new DefaultTableModel(columnNames, LOGIN_COLUMN) {
             @Override
             public Class<?> getColumnClass(int column) {
@@ -319,6 +314,10 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
                     return;
                 }
 
+                if (activeAccountManager.accounts().isEmpty()) {
+                    return;
+                }
+
                 if (e.getKeyCode() == NativeKeyEvent.VC_ALT_L || e.getKeyCode() == NativeKeyEvent.VC_ALT_R) {
                     altPressed = true;
                 }
@@ -341,9 +340,12 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
                             launcher.reassignControllersForProcesses(processes);
                             break;
                         case NativeKeyEvent.VC_S:
-                            Launcher.resizeWindowsWithRectangles(accounts, activeAccountManager,
+                            Launcher.resizeWindowsWithRectangles(
+                                    accounts,
+                                    activeAccountManager,
                                     activeAccountManager.accounts().stream()
-                                            .sorted((a1, a2) -> Integer.compare(accounts.indexOf(a1), accounts.indexOf(a2)))
+                                            .sorted((a1, a2) ->
+                                                    Integer.compare(accounts.indexOf(a1), accounts.indexOf(a2)))
                                             .map(activeAccountManager::findWindowRect)
                                             .flatMap(Optional::stream)
                                             .toList());
@@ -360,8 +362,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
             }
 
             @Override
-            public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent) {
-            }
+            public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent) {}
         });
     }
 
@@ -381,7 +382,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
 
         if (dialog.isSaved()) {
             accounts.add(newAccount);
-            tableModel.addRow(new Object[]{newAccount.wantLogin(), newAccount.name(), false});
+            tableModel.addRow(new Object[] {newAccount.wantLogin(), newAccount.name(), false});
         }
     }
 
@@ -412,12 +413,6 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
             }
         }
 
-        LOG.debug(
-                "Accounts are {}",
-                accounts.stream()
-                        .map(a -> "(" + a.username() + ", " + a.wantLogin() + ")")
-                        .collect(joining(", ")));
-
         playButton.setEnabled(false);
 
         CompletableFuture.runAsync(() -> {
@@ -427,11 +422,6 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
                     .filter(Account::wantLogin)
                     .toList();
 
-            LOG.debug(
-                    "Accounts to login are {}",
-                    accountsToLogin.stream()
-                            .map(a -> "(" + a.username() + ", " + a.wantLogin() + ")")
-                            .collect(joining(", ")));
             var futures = accountsToLogin.stream()
                     .map(account -> CompletableFuture.runAsync(() -> {
                         var process = launcher.launch(account, launcher.workingDir());
@@ -444,6 +434,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
                                 throw new RuntimeException(e);
                             }
                             deregisterAccount(accounts.indexOf(account), account);
+                            launcher.onProcessEnd(process);
                         });
 
                         SwingUtilities.invokeLater(() -> {
@@ -556,7 +547,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
 
     private void loadAccounts(List<Account> accounts) {
         for (var account : accounts) {
-            tableModel.addRow(new Object[]{account.wantLogin(), account.name(), false});
+            tableModel.addRow(new Object[] {account.wantLogin(), account.name(), false});
         }
     }
 

@@ -13,6 +13,7 @@ target/
 *.iml
 *.ipr
 
+logs/*
 *.zip
 
 dependency-reduced-pom.xml

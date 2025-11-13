@@ -48,6 +48,9 @@ public class RewrittenLauncher extends Launcher<RewrittenApiResponse> {
     }
 
     @Override
+    public void onProcessEnd(Process process) {}
+
+    @Override
     public void performPostLoginOverrides(List<Account> accounts, ActiveAccountManager activeAccountManager) {
         // TODO this can probably mostly just be reused in the superclass, copied over from the SunriseJpLauncher
     }

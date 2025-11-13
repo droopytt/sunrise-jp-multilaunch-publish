@@ -59,7 +59,7 @@ public class WindowSwapService {
             @Override
             public void nativeMousePressed(NativeMouseEvent nativeMouseEvent) {
                 if (altDown) {
-                    LOG.debug("Got alt click event {}. {}", nativeMouseEvent.getX(), nativeMouseEvent.getY());
+                    LOG.trace("Got alt click event {}. {}", nativeMouseEvent.getX(), nativeMouseEvent.getY());
                     var x = nativeMouseEvent.getX();
                     var y = nativeMouseEvent.getY();
                     handleAltClick(x, y);

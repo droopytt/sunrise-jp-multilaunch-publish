@@ -12,7 +12,6 @@ public class AccountInfoDialog extends JDialog {
     private JButton deleteButton;
     private final Account account;
 
-
     private boolean saved = false;
     private boolean delete = false;
 
@@ -80,7 +79,7 @@ public class AccountInfoDialog extends JDialog {
         deleteButton = new JButton("Delete");
         deleteButton.setPreferredSize(new Dimension(0, 30));
         add(deleteButton, gbc);
-        if(!displayDeleteButton) {
+        if (!displayDeleteButton) {
             deleteButton.setVisible(false);
         }
 

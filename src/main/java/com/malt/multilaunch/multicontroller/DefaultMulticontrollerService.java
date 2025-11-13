@@ -28,7 +28,7 @@ class DefaultMulticontrollerService implements MultiControllerService {
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             LOG.debug("Received response {} from unassign request to {}", response, unassignEndpoint);
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            logError(e);
         }
     }
 
@@ -44,7 +44,7 @@ class DefaultMulticontrollerService implements MultiControllerService {
                     .build();
             httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            logError(e);
         }
     }
 
@@ -63,7 +63,14 @@ class DefaultMulticontrollerService implements MultiControllerService {
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             LOG.debug("Got response for swap request {}", response.body());
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            logError(e);
         }
+    }
+
+    private static void logError(Exception e) {
+        LOG.error(
+                "Could not perform multicontroller action, is endpoint {} down? {}",
+                MULTICONTROLLER_BASE_ENDPOINT,
+                e.getMessage());
     }
 }

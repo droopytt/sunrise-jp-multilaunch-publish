@@ -8,9 +8,6 @@ import com.malt.multilaunch.login.APIResponse;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.multicontroller.WindowAssignRequest;
 import com.malt.multilaunch.ui.ActiveAccountManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
@@ -25,12 +22,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Launcher<T extends APIResponse> {
     private static final Logger LOG = LoggerFactory.getLogger(Launcher.class);
     private static final double MULTIPLIER = 0.35f;
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final int MAX_REASONABLE_OFFSET = 30;
     private final Path workingDir;
     private final MultiControllerService multiControllerService;
 
@@ -45,7 +47,10 @@ public abstract class Launcher<T extends APIResponse> {
             return;
         }
         if (rectangles.size() != accounts.size()) {
-            LOG.warn("Had {} rectangles but {} accounts than processes to resize, returning.", rectangles.size(), accounts.size());
+            LOG.warn(
+                    "Had {} rectangles but {} accounts than processes to resize, returning.",
+                    rectangles.size(),
+                    accounts.size());
         } else {
             for (int i = 0; i < accounts.size(); i++) {
                 var finalI = i;
@@ -59,7 +64,7 @@ public abstract class Launcher<T extends APIResponse> {
                     WindowUtils.resize(hwnd, next.x, next.y, next.width, next.height);
                     activeAccountManager.putWindow(account, next);
                     var newWindowRect = WindowUtils.getWindowRect(hwnd);
-                    LOG.debug(
+                    LOG.trace(
                             "Window rect for pid {} was {} and is now {}", process.pid(), oldWindowRect, newWindowRect);
                 });
             }
@@ -226,12 +231,18 @@ public abstract class Launcher<T extends APIResponse> {
                 .orElseThrow();
         var offset = Launcher.getOffsets(testAccount).width;
 
+        if (offset > MAX_REASONABLE_OFFSET) {
+            LOG.debug("Offset was suspiciously large ({}), using default value of 16", offset);
+            offset = 16;
+        }
+
         var rectangles = Launcher.createTargetWindowRects(workingArea, accounts.size(), offset);
 
         resizeWindowsWithRectangles(accounts, activeAccountManager, rectangles);
     }
 
-    public static void resizeWindowsWithRectangles(List<Account> accounts, ActiveAccountManager activeAccountManager, List<Rectangle> rectangles) {
+    public static void resizeWindowsWithRectangles(
+            List<Account> accounts, ActiveAccountManager activeAccountManager, List<Rectangle> rectangles) {
         Launcher.resize(accounts, activeAccountManager, rectangles);
     }
 
@@ -271,7 +282,16 @@ public abstract class Launcher<T extends APIResponse> {
     }
 
     public void reassignControllersForProcesses(List<Process> processes) {
-        multiControllerService.unassignAllToons();
-        assignControllerToWindows(processes);
+        try (var executor = Executors.newSingleThreadScheduledExecutor()) {
+            multiControllerService.unassignAllToons();
+            executor.schedule(
+                    () -> {
+                        assignControllerToWindows(processes);
+                    },
+                    100,
+                    TimeUnit.MILLISECONDS);
+        }
     }
+
+    public abstract void onProcessEnd(Process process);
 }

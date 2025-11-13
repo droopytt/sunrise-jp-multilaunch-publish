@@ -3,6 +3,7 @@ package com.malt.multilaunch.launcher;
 import static java.util.Collections.synchronizedSet;
 
 import com.malt.multilaunch.Account;
+import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.ffm.ProcessAffinityUtils;
 import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
@@ -21,10 +22,11 @@ import org.slf4j.LoggerFactory;
 
 public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
     private static final Logger LOG = LoggerFactory.getLogger(SunriseJPLauncher.class);
-    private int lastCore = 1;
+    private final CoreAssigner coreAssigner;
 
     public SunriseJPLauncher(Path workingDir, MultiControllerService multiControllerService) {
         super(workingDir, multiControllerService);
+        coreAssigner = CoreAssigner.create();
     }
 
     @Override
@@ -70,12 +72,10 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
     }
 
     private void awaitForLineInOutput(List<Process> processes, String targetLine) {
-        int totalNumCores = Runtime.getRuntime().availableProcessors();
-        LOG.debug("Detected {} cores", totalNumCores);
         var doneProcesses = synchronizedSet(new HashSet<Process>());
 
         for (var process : processes) {
-            int coreIndex = nextAvailableCore(totalNumCores);
+            int coreIndex = coreAssigner.getNextAvailableCore(process.pid());
             var waitUntil = Instant.now().plusSeconds(90);
             new Thread(
                             () -> {
@@ -144,9 +144,8 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
         LOG.info("All processes ready or timeout reached, returning from method.");
     }
 
-    private int nextAvailableCore(int totalNumCores) {
-        var nextCore = lastCore % totalNumCores;
-        lastCore++;
-        return nextCore;
+    @Override
+    public void onProcessEnd(Process process) {
+        coreAssigner.removeAssignedCore(process.pid());
     }
 }
