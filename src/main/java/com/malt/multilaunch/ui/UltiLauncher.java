@@ -1,11 +1,11 @@
 package com.malt.multilaunch.ui;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.launcher.SunriseJPLauncher;
 import com.malt.multilaunch.login.APIResponse;
+import com.malt.multilaunch.login.AccountService;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -65,12 +64,13 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
 
     // Member fields
     private final Config config;
-    private Launcher<?> launcher;
+    private final Launcher<?> launcher;
     private final List<Account> accounts;
     private final ActiveAccountManager activeAccountManager;
     private final WindowSwapService windowSwapService;
     protected final MultiControllerService multiControllerService;
     private final WindowService windowService;
+    private final AccountService accountService;
 
     public UltiLauncher() {
         this.config = readConfig();
@@ -80,7 +80,8 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         this.windowSwapService = new WindowSwapService(activeAccountManager, multiControllerService);
         var coreAssigner = CoreAssigner.createWithStartingCore(config.startingCore());
         this.launcher = new SunriseJPLauncher(resolvePath(), multiControllerService, coreAssigner, windowService);
-        this.accounts = findAccounts(launcher);
+        this.accountService = AccountService.create(launcher);
+        this.accounts = accountService.findAccounts();
 
         initComponents();
         loadAccounts(accounts);
@@ -127,7 +128,16 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
     private void setupShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             LOG.debug("Saving accounts before exit...");
-            saveAccountsToFile();
+            var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
+            try {
+                accountService.saveAccounts(accountFilePath, accounts);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Failed to save accounts to file: " + e.getMessage(),
+                        "Save Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }));
     }
 
@@ -139,41 +149,6 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
     private Path resolvePath() {
         var appData = System.getenv("LOCALAPPDATA");
         return Paths.get(appData, "SunriseGames", "Toontown", "sv1.2.39.5", "clients", "Toontown_JP");
-    }
-
-    private List<Account> findAccounts(Launcher<?> launcher) {
-        var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
-        assertFileExists(accountFilePath, () -> {
-            try {
-                accountFilePath.toFile().createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            var value = List.of(new Account("account1", "pass2"));
-            try {
-                OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(accountFilePath.toFile(), value);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            JOptionPane.showMessageDialog(
-                    null,
-                    "Generated accounts JSON file at %s, please fill this out with your accounts"
-                            .formatted(accountFilePath));
-            System.exit(0);
-        });
-        var accounts = new ArrayList<Account>();
-        try {
-            accounts = OBJECT_MAPPER.readValue(accountFilePath.toFile(), new TypeReference<>() {});
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "Could not load accounts - ensure JSON format is filled out");
-        }
-        return accounts;
-    }
-
-    public static void assertFileExists(Path path, Runnable onCreateAction) {
-        if (!Files.exists(path)) {
-            onCreateAction.run();
-        }
     }
 
     private void initComponents() {
@@ -394,21 +369,6 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         if (dialog.isSaved()) {
             accounts.add(newAccount);
             tableModel.addRow(new Object[] {newAccount.wantLogin(), newAccount.name(), false});
-        }
-    }
-
-    private void saveAccountsToFile() {
-        var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
-        try {
-            OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(accountFilePath.toFile(), accounts);
-            LOG.debug("Accounts saved to file");
-        } catch (IOException e) {
-            LOG.error("Failed to save accounts", e);
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Failed to save accounts to file: " + e.getMessage(),
-                    "Save Error",
-                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
