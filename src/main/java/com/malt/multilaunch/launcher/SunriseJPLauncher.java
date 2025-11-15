@@ -2,12 +2,13 @@ package com.malt.multilaunch.launcher;
 
 import static java.util.Collections.synchronizedSet;
 
-import com.malt.multilaunch.Account;
 import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.ffm.ProcessAffinityUtils;
 import com.malt.multilaunch.login.SunriseApiResponse;
+import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
+import com.malt.multilaunch.window.WindowService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,7 +16,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +25,11 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
     private final CoreAssigner coreAssigner;
 
     public SunriseJPLauncher(
-            Path workingDir, MultiControllerService multiControllerService, CoreAssigner coreAssigner) {
-        super(workingDir, multiControllerService);
+            Path workingDir,
+            MultiControllerService multiControllerService,
+            CoreAssigner coreAssigner,
+            WindowService windowService) {
+        super(workingDir, multiControllerService, windowService);
         this.coreAssigner = coreAssigner;
     }
 
@@ -46,15 +49,22 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
 
     @Override
     public void performPostLoginOverrides(List<Account> accounts, ActiveAccountManager activeAccountManager) {
-        CompletableFuture.runAsync(() -> {
-            var processes = accounts.stream()
-                    .map(activeAccountManager::findProcessForAccount)
-                    .flatMap(Optional::stream)
-                    .toList();
-            awaitForLineInOutput(processes, "Using gameServer from launcher:");
-            Launcher.resizeWindowsForProcesses(accounts, activeAccountManager);
-            assignControllerToWindows(processes);
-        });
+        CompletableFuture.supplyAsync(() -> {
+                    var processes = accounts.stream()
+                            .map(activeAccountManager::findProcessForAccount)
+                            .flatMap(Optional::stream)
+                            .toList();
+
+                    awaitForLineInOutput(processes, "Using gameServer from launcher:");
+                    return processes;
+                })
+                .thenAccept(processes -> {
+                    CompletableFuture.runAsync(
+                            () -> windowService.resizeWindowsForProcesses(accounts, activeAccountManager));
+
+                    CompletableFuture.runAsync(
+                            () -> windowService.assignControllerToWindows(processes, multiControllerService));
+                });
     }
 
     @Override
@@ -143,6 +153,11 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
         }
 
         LOG.info("All processes ready or timeout reached, returning from method.");
+    }
+
+    @Override
+    protected Map<String, String> additionalLoginArgs() {
+        return Map.of("serverType", "Toontown Japan 2010");
     }
 
     @Override

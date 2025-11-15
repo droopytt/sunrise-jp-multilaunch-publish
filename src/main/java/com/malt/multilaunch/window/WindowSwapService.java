@@ -1,10 +1,10 @@
-package com.malt.multilaunch.ui;
+package com.malt.multilaunch.window;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
-import com.malt.multilaunch.Account;
-import com.malt.multilaunch.jna.WindowUtils;
+import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
+import com.malt.multilaunch.ui.ActiveAccountManager;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;

@@ -1,4 +1,4 @@
-package com.malt.multilaunch;
+package com.malt.multilaunch.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -17,8 +17,6 @@ public class Account {
     private String password;
 
     private boolean wantLogin;
-
-    public Account() {}
 
     @JsonCreator
     public Account(

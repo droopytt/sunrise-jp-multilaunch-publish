@@ -78,18 +78,8 @@ public class WindowAssignRequest {
     }
 
     public enum PairDirection {
-        LEFT(0),
-        RIGHT(1);
-
-        private final int intValue;
-
-        PairDirection(int intValue) {
-            this.intValue = intValue;
-        }
-
-        public int intValue() {
-            return intValue;
-        }
+        LEFT,
+        RIGHT;
 
         public static PairDirection fromIntValue(int value) {
             return switch (value) {

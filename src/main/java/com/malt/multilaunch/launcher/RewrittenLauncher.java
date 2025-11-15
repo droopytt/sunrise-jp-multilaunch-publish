@@ -1,9 +1,10 @@
 package com.malt.multilaunch.launcher;
 
-import com.malt.multilaunch.Account;
 import com.malt.multilaunch.login.RewrittenApiResponse;
+import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
+import com.malt.multilaunch.window.WindowService;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -23,13 +24,19 @@ public class RewrittenLauncher extends Launcher<RewrittenApiResponse> {
         return map;
     }
 
-    public RewrittenLauncher(Path workingDir, MultiControllerService multiControllerService) {
-        super(workingDir, multiControllerService);
+    public RewrittenLauncher(
+            Path workingDir, MultiControllerService multiControllerService, WindowService windowService) {
+        super(workingDir, multiControllerService, windowService);
     }
 
     @Override
     protected Class<RewrittenApiResponse> responseType() {
         return RewrittenApiResponse.class;
+    }
+
+    @Override
+    protected Map<String, String> additionalLoginArgs() {
+        return Map.of();
     }
 
     @Override

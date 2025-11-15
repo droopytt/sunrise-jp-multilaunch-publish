@@ -1,4 +1,4 @@
-package com.malt.multilaunch;
+package com.malt.multilaunch.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

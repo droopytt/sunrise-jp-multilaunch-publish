@@ -1,6 +1,6 @@
 package com.malt.multilaunch.multicontroller;
 
-import com.malt.multilaunch.Config;
+import com.malt.multilaunch.model.Config;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

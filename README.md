@@ -24,6 +24,9 @@ and optional.
 Requires **Java 25** which you can grab from [here](https://adoptium.net/en-GB/temurin/releases).
 You will also need maven version `3.9.1`. Make sure your maven is using the Java 25 installation.
 
+This code uses spotless to format code. The build will fail if spotless checks fail. You can run
+`mvn spotless:apply` to format all files.
+
 ## Building
 
 Run [`jlink.ps1`](jlink.ps1) ensuring the `jlink` is run from your Java 25.

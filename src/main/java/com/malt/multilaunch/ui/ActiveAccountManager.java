@@ -1,14 +1,11 @@
 package com.malt.multilaunch.ui;
 
-import com.malt.multilaunch.Account;
+import com.malt.multilaunch.model.Account;
 import java.awt.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ActiveAccountManager {
-    private static final Logger LOG = LoggerFactory.getLogger(ActiveAccountManager.class);
     private final Map<Account, Process> activeProcesses;
     private final Map<Account, Rectangle> windowRects;
 
@@ -31,10 +28,6 @@ public class ActiveAccountManager {
 
     public Set<Account> accounts() {
         return activeProcesses.keySet();
-    }
-
-    public Collection<Rectangle> allWindows() {
-        return windowRects.values();
     }
 
     public void resetWindows() {

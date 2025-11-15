@@ -1,4 +1,4 @@
-package com.malt.multilaunch.jna;
+package com.malt.multilaunch.window;
 
 import java.awt.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;

@@ -1,6 +1,6 @@
 package com.malt.multilaunch.ui;
 
-import com.malt.multilaunch.Config;
+import com.malt.multilaunch.model.Config;
 import java.awt.*;
 import javax.swing.*;
 

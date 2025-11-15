@@ -1,6 +1,6 @@
 package com.malt.multilaunch.multicontroller;
 
-import com.malt.multilaunch.Config;
+import com.malt.multilaunch.model.Config;
 import java.util.List;
 
 public class ConfigAwareMulticontrollerService implements MultiControllerService {

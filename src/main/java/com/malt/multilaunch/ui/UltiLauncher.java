@@ -2,14 +2,16 @@ package com.malt.multilaunch.ui;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.malt.multilaunch.Account;
-import com.malt.multilaunch.Config;
 import com.malt.multilaunch.ffm.CoreAssigner;
-import com.malt.multilaunch.jna.WindowUtils;
 import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.launcher.SunriseJPLauncher;
 import com.malt.multilaunch.login.APIResponse;
+import com.malt.multilaunch.model.Account;
+import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
+import com.malt.multilaunch.window.WindowService;
+import com.malt.multilaunch.window.WindowSwapService;
+import com.malt.multilaunch.window.WindowUtils;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.imageio.ImageIO;
@@ -67,15 +70,17 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
     private final ActiveAccountManager activeAccountManager;
     private final WindowSwapService windowSwapService;
     protected final MultiControllerService multiControllerService;
+    private final WindowService windowService;
 
     public UltiLauncher() {
         this.config = readConfig();
-        multiControllerService = MultiControllerService.createDefault(config);
+        this.multiControllerService = MultiControllerService.createDefault(config);
+        this.activeAccountManager = ActiveAccountManager.create();
+        this.windowService = WindowService.create();
+        this.windowSwapService = new WindowSwapService(activeAccountManager, multiControllerService);
         var coreAssigner = CoreAssigner.createWithStartingCore(config.startingCore());
-        launcher = new SunriseJPLauncher(resolvePath(), multiControllerService, coreAssigner);
-        accounts = findAccounts(launcher);
-        activeAccountManager = ActiveAccountManager.create();
-        windowSwapService = new WindowSwapService(activeAccountManager, multiControllerService);
+        this.launcher = new SunriseJPLauncher(resolvePath(), multiControllerService, coreAssigner, windowService);
+        this.accounts = findAccounts(launcher);
 
         initComponents();
         loadAccounts(accounts);
@@ -144,11 +149,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            var value = List.of(
-                    new Account("account1", "pass2"),
-                    new Account("account1", "pass3"),
-                    new Account("account1", "pass4"),
-                    new Account("account1", "pass5"));
+            var value = List.of(new Account("account1", "pass2"));
             try {
                 OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(accountFilePath.toFile(), value);
             } catch (IOException e) {
@@ -333,6 +334,11 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
                     altPressed = true;
                 }
 
+                var openAccounts = accounts.stream()
+                        .filter(acc ->
+                                activeAccountManager.findProcessForAccount(acc).isPresent())
+                        .toList();
+
                 if (altPressed) {
                     switch (e.getKeyCode()) {
                         case NativeKeyEvent.VC_R:
@@ -341,18 +347,12 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
                                     .flatMap(Optional::stream)
                                     .toList();
                             activeAccountManager.resetWindows();
-                            Launcher.resizeWindowsForProcesses(
-                                    accounts.stream()
-                                            .filter(acc -> activeAccountManager
-                                                    .findProcessForAccount(acc)
-                                                    .isPresent())
-                                            .toList(),
-                                    activeAccountManager);
-                            launcher.reassignControllersForProcesses(processes);
+                            windowService.resizeWindowsForProcesses(openAccounts, activeAccountManager);
+                            reassignControllersForProcesses(processes);
                             break;
                         case NativeKeyEvent.VC_S:
-                            Launcher.resizeWindowsWithRectangles(
-                                    accounts,
+                            windowService.resizeWindowsWithRectangles(
+                                    openAccounts,
                                     activeAccountManager,
                                     activeAccountManager.accounts().stream()
                                             .sorted((a1, a2) ->
@@ -470,7 +470,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
     }
 
     private void onRewrittenSelected() {
-        LOG.info("Clash server selected");
+        LOG.info("Rewritten server selected");
         sunriseJpMenuItem.setSelected(false);
         rewrittenMenuItem.setSelected(true);
         // TODO: Switch to Rewritten server
@@ -562,16 +562,13 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         }
     }
 
-    static void main() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
+    private void reassignControllersForProcesses(List<Process> processes) {
+        try (var executor = Executors.newSingleThreadScheduledExecutor()) {
+            multiControllerService.unassignAllToons();
+            executor.schedule(
+                    () -> windowService.assignControllerToWindows(processes, multiControllerService),
+                    100,
+                    TimeUnit.MILLISECONDS);
         }
-
-        SwingUtilities.invokeLater(() -> {
-            var frame = new UltiLauncher<>();
-            frame.setVisible(true);
-        });
     }
 }
