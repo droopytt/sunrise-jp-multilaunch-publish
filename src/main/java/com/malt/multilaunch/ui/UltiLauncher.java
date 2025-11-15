@@ -2,6 +2,9 @@ package com.malt.multilaunch.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.malt.multilaunch.ffm.CoreAssigner;
+import com.malt.multilaunch.hotkeys.HotkeyService;
+import com.malt.multilaunch.hotkeys.ResetWindowsAction;
+import com.malt.multilaunch.hotkeys.SnapWindowsAction;
 import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.launcher.SunriseJPLauncher;
 import com.malt.multilaunch.login.APIResponse;
@@ -11,7 +14,6 @@ import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.window.WindowService;
 import com.malt.multilaunch.window.WindowSwapService;
-import com.malt.multilaunch.window.WindowUtils;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,19 +24,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import org.jnativehook.GlobalScreen;
-import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
-import org.jnativehook.keyboard.NativeKeyListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +67,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
     protected final MultiControllerService multiControllerService;
     private final WindowService windowService;
     private final AccountService accountService;
+    private final HotkeyService hotkeyService;
 
     public UltiLauncher() {
         this.config = readConfig();
@@ -84,10 +81,22 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         this.accounts = accountService.findAccounts();
 
         initComponents();
-        loadAccounts(accounts);
+        loadAccountsIntoTable(accounts);
         setupListeners();
-        setupGlobalHotkeys();
-        setupShutdownHook();
+
+        this.hotkeyService = HotkeyService.builder()
+                .withActiveAccountManager(activeAccountManager)
+                .withHotkeyMapping(
+                        NativeKeyEvent.VC_R,
+                        new ResetWindowsAction(
+                                activeAccountManager, windowService, multiControllerService, this::findOpenAccounts))
+                .withHotkeyMapping(
+                        NativeKeyEvent.VC_S,
+                        new SnapWindowsAction(
+                                activeAccountManager, windowService, multiControllerService, this::findOpenAccounts))
+                .build();
+
+        hotkeyService.register();
         windowSwapService.setup();
 
         addWindowListener(new WindowAdapter() {
@@ -96,6 +105,14 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
                 onWindowClosing();
             }
         });
+
+        setupShutdownHook();
+    }
+
+    private List<Account> findOpenAccounts() {
+        return accounts.stream()
+                .filter(acc -> activeAccountManager.findProcessForAccount(acc).isPresent())
+                .toList();
     }
 
     private Config readConfig() {
@@ -142,7 +159,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
     }
 
     private void onWindowClosing() {
-        cleanupGlobalHotkeys();
+        hotkeyService.cleanup();
         windowSwapService.shutdown();
     }
 
@@ -277,87 +294,6 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
                 onTableCellClicked(row, col);
             }
         });
-    }
-
-    private void setupGlobalHotkeys() {
-        java.util.logging.Logger jnativeLogger = java.util.logging.Logger.getLogger(
-                GlobalScreen.class.getPackage().getName());
-        jnativeLogger.setLevel(Level.OFF);
-        jnativeLogger.setUseParentHandlers(false);
-
-        try {
-            GlobalScreen.registerNativeHook();
-        } catch (NativeHookException e) {
-            LOG.error("Failed to register native hook", e);
-            return;
-        }
-
-        GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
-            private boolean altPressed = false;
-
-            @Override
-            public void nativeKeyPressed(NativeKeyEvent e) {
-                if (!WindowUtils.isToontownWindowActive()) {
-                    return;
-                }
-
-                if (activeAccountManager.accounts().isEmpty()) {
-                    return;
-                }
-
-                if (e.getKeyCode() == NativeKeyEvent.VC_ALT_L || e.getKeyCode() == NativeKeyEvent.VC_ALT_R) {
-                    altPressed = true;
-                }
-
-                var openAccounts = accounts.stream()
-                        .filter(acc ->
-                                activeAccountManager.findProcessForAccount(acc).isPresent())
-                        .toList();
-
-                if (altPressed) {
-                    switch (e.getKeyCode()) {
-                        case NativeKeyEvent.VC_R:
-                            var processes = accounts.stream()
-                                    .map(activeAccountManager::findProcessForAccount)
-                                    .flatMap(Optional::stream)
-                                    .toList();
-                            activeAccountManager.resetWindows();
-                            windowService.resizeWindowsForProcesses(openAccounts, activeAccountManager);
-                            reassignControllersForProcesses(processes);
-                            break;
-                        case NativeKeyEvent.VC_S:
-                            windowService.resizeWindowsWithRectangles(
-                                    openAccounts,
-                                    activeAccountManager,
-                                    activeAccountManager.accounts().stream()
-                                            .sorted((a1, a2) ->
-                                                    Integer.compare(accounts.indexOf(a1), accounts.indexOf(a2)))
-                                            .map(activeAccountManager::findWindowRect)
-                                            .flatMap(Optional::stream)
-                                            .toList());
-                            break;
-                    }
-                }
-            }
-
-            @Override
-            public void nativeKeyReleased(NativeKeyEvent e) {
-                if (e.getKeyCode() == NativeKeyEvent.VC_ALT_L || e.getKeyCode() == NativeKeyEvent.VC_ALT_R) {
-                    altPressed = false;
-                }
-            }
-
-            @Override
-            public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent) {}
-        });
-    }
-
-    private void cleanupGlobalHotkeys() {
-        try {
-            GlobalScreen.unregisterNativeHook();
-        } catch (NativeHookException e) {
-            LOG.error("Failed to unregister native hook", e);
-        }
     }
 
     private void onAddAccountClicked() {
@@ -516,19 +452,9 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         tableModel.setValueAt(false, row, END_COLUMN);
     }
 
-    private void loadAccounts(List<Account> accounts) {
+    private void loadAccountsIntoTable(List<Account> accounts) {
         for (var account : accounts) {
             tableModel.addRow(new Object[] {account.wantLogin(), account.name(), false});
-        }
-    }
-
-    private void reassignControllersForProcesses(List<Process> processes) {
-        try (var executor = Executors.newSingleThreadScheduledExecutor()) {
-            multiControllerService.unassignAllToons();
-            executor.schedule(
-                    () -> windowService.assignControllerToWindows(processes, multiControllerService),
-                    100,
-                    TimeUnit.MILLISECONDS);
         }
     }
 }
