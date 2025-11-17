@@ -7,7 +7,6 @@ import com.malt.multilaunch.model.Account;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import org.slf4j.Logger;
@@ -35,25 +34,18 @@ public interface AccountService {
         @Override
         public List<Account> findAccounts() {
             var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
+            var initialAccounts = List.of(new Account("account1", "pass1"));
+            var accounts = initialAccounts;
             assertFileExists(accountFilePath, () -> {
                 try {
                     accountFilePath.toFile().createNewFile();
+                    OBJECT_MAPPER
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValue(accountFilePath.toFile(), initialAccounts);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                var value = List.of(new Account("account1", "pass2"));
-                try {
-                    OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(accountFilePath.toFile(), value);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                JOptionPane.showMessageDialog(
-                        null,
-                        "Generated accounts JSON file at %s, please fill this out with your accounts"
-                                .formatted(accountFilePath));
-                System.exit(0);
             });
-            var accounts = new ArrayList<Account>();
             try {
                 accounts = OBJECT_MAPPER.readValue(accountFilePath.toFile(), new TypeReference<>() {});
             } catch (IOException e) {
