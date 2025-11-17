@@ -6,14 +6,13 @@ import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.ffm.ProcessAffinityUtils;
 import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.model.Account;
+import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import com.malt.multilaunch.window.WindowService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -25,17 +24,13 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
     private final CoreAssigner coreAssigner;
 
     public SunriseJPLauncher(
-            Path workingDir,
+            Config config,
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
-            WindowService windowService) {
-        super(workingDir, multiControllerService, windowService);
+            WindowService windowService,
+            GameLoginClient<SunriseApiResponse> gameLoginClient) {
+        super(config, multiControllerService, windowService, gameLoginClient);
         this.coreAssigner = coreAssigner;
-    }
-
-    @Override
-    protected Class<SunriseApiResponse> responseType() {
-        return SunriseApiResponse.class;
     }
 
     @Override
@@ -68,17 +63,16 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
     }
 
     @Override
-    public URI getLoginApiUri() {
-        return URI.create("https://sunrise.games/api/login/alt/");
-    }
-
-    @Override
     public List<String> processArgs() {
         return List.of("launcher.py");
     }
 
     @Override
     public String executableName() {
+        return jpExecutableName();
+    }
+
+    public static String jpExecutableName() {
         return "py24.exe";
     }
 

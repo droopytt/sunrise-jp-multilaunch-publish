@@ -1,5 +1,7 @@
 package com.malt.multilaunch;
 
+import com.google.inject.Guice;
+import com.malt.multilaunch.ui.SunriseJpUltiLauncherModule;
 import com.malt.multilaunch.ui.UltiLauncher;
 import javax.swing.*;
 
@@ -11,9 +13,13 @@ public class Main {
             e.printStackTrace();
         }
 
+        var injector = Guice.createInjector(new SunriseJpUltiLauncherModule());
+
         SwingUtilities.invokeLater(() -> {
-            var frame = new UltiLauncher<>();
-            frame.setVisible(true);
+            var ultiLauncher = injector.getInstance(UltiLauncher.class);
+            ultiLauncher.setVisible(true);
+
+            ultiLauncher.initialize();
         });
     }
 }

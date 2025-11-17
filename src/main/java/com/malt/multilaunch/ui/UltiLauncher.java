@@ -1,18 +1,12 @@
 package com.malt.multilaunch.ui;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.malt.multilaunch.ffm.CoreAssigner;
+import com.google.inject.Inject;
 import com.malt.multilaunch.hotkeys.HotkeyService;
-import com.malt.multilaunch.hotkeys.ResetWindowsAction;
-import com.malt.multilaunch.hotkeys.SnapWindowsAction;
 import com.malt.multilaunch.launcher.Launcher;
-import com.malt.multilaunch.launcher.SunriseJPLauncher;
-import com.malt.multilaunch.login.APIResponse;
 import com.malt.multilaunch.login.AccountService;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
-import com.malt.multilaunch.window.WindowService;
 import com.malt.multilaunch.window.WindowSwapService;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -20,9 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -30,29 +22,24 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import org.jnativehook.keyboard.NativeKeyEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends JFrame {
+public class UltiLauncher extends JFrame {
     private static final Logger LOG = LoggerFactory.getLogger(UltiLauncher.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     // UI elements
     public static final int LOGIN_COLUMN = 0;
     public static final int TOON_COLUMN = 1;
     public static final int END_COLUMN = 2;
     public static final String WINDOW_TITLE = "Ultilaunch";
-    public static final String CONFIG_FILE = "config.json";
 
     private JTable accountTable;
     private DefaultTableModel tableModel;
     private JButton playButton;
     private JMenuBar menuBar;
     private JMenu serverMenu;
-    private JMenu optionsMenu;
     private JMenuItem sunriseJpMenuItem;
-    private JMenuItem rewrittenMenuItem;
     private JMenuItem optionsMenuItem;
     private JMenuItem endAllMenuItem;
     private JMenuItem untickAllMenuItem;
@@ -65,36 +52,37 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
     private final ActiveAccountManager activeAccountManager;
     private final WindowSwapService windowSwapService;
     protected final MultiControllerService multiControllerService;
-    private final WindowService windowService;
     private final AccountService accountService;
     private final HotkeyService hotkeyService;
+    private final ConfigService configService;
 
-    public UltiLauncher() {
-        this.config = readConfig();
-        this.multiControllerService = MultiControllerService.createDefault(config);
-        this.activeAccountManager = ActiveAccountManager.create();
-        this.windowService = WindowService.create();
-        this.windowSwapService = new WindowSwapService(activeAccountManager, multiControllerService);
-        var coreAssigner = CoreAssigner.createWithStartingCore(config.startingCore());
-        this.launcher = new SunriseJPLauncher(resolvePath(), multiControllerService, coreAssigner, windowService);
-        this.accountService = AccountService.create(launcher);
-        this.accounts = accountService.findAccounts();
+    @Inject
+    public UltiLauncher(
+            ConfigService configService,
+            Config config,
+            MultiControllerService multiControllerService,
+            ActiveAccountManager activeAccountManager,
+            WindowSwapService windowSwapService,
+            Launcher<?> launcher,
+            AccountService accountService,
+            List<Account> accounts,
+            HotkeyService hotkeyService) {
+        this.configService = configService;
+        this.config = config;
+        this.multiControllerService = multiControllerService;
+        this.activeAccountManager = activeAccountManager;
+        this.windowSwapService = windowSwapService;
+        this.launcher = launcher;
+        this.accountService = accountService;
+        this.accounts = accounts;
+        this.hotkeyService = hotkeyService;
+    }
 
+    public void initialize() {
+        validateWorkingPath();
         initComponents();
         loadAccountsIntoTable(accounts);
         setupListeners();
-
-        this.hotkeyService = HotkeyService.builder()
-                .withActiveAccountManager(activeAccountManager)
-                .withHotkeyMapping(
-                        NativeKeyEvent.VC_R,
-                        new ResetWindowsAction(
-                                activeAccountManager, windowService, multiControllerService, this::findOpenAccounts))
-                .withHotkeyMapping(
-                        NativeKeyEvent.VC_S,
-                        new SnapWindowsAction(
-                                activeAccountManager, windowService, multiControllerService, this::findOpenAccounts))
-                .build();
 
         hotkeyService.register();
         windowSwapService.setup();
@@ -109,38 +97,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         setupShutdownHook();
     }
 
-    private List<Account> findOpenAccounts() {
-        return accounts.stream()
-                .filter(acc -> activeAccountManager.findProcessForAccount(acc).isPresent())
-                .toList();
-    }
-
-    private Config readConfig() {
-        var configPath = Path.of(CONFIG_FILE);
-        if (!Files.exists(configPath)) {
-            try {
-                configPath.toFile().createNewFile();
-                var value = new Config(true, false, 1);
-                OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), value);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        try {
-            var config = OBJECT_MAPPER.readValue(configPath.toFile(), Config.class);
-            if (config.startingCore() >= Runtime.getRuntime().availableProcessors()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "You cannot assign %d as a starting core as that core does not exist. Setting to default of 1."
-                                .formatted(config.startingCore()));
-                config.setStartingCore(1);
-                saveConfigToFile();
-            }
-            return config;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private void validateWorkingPath() {}
 
     private void setupShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -163,11 +120,6 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         windowSwapService.shutdown();
     }
 
-    private Path resolvePath() {
-        var appData = System.getenv("LOCALAPPDATA");
-        return Paths.get(appData, "SunriseGames", "Toontown", "sv1.2.39.5", "clients", "Toontown_JP");
-    }
-
     private void initComponents() {
         setTitle(WINDOW_TITLE);
         setSize(565, 400);
@@ -184,10 +136,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
 
         serverMenu = new JMenu("Server");
         sunriseJpMenuItem = new JCheckBoxMenuItem("Sunrise JP", true);
-        rewrittenMenuItem = new JCheckBoxMenuItem("Rewritten");
         serverMenu.add(sunriseJpMenuItem);
-        // TODO reinstate one day
-        //        serverMenu.add(rewrittenMenuItem);
         menuBar.add(serverMenu);
 
         optionsMenuItem = new JMenuItem("Options");
@@ -276,7 +225,6 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         playButton.addActionListener(e -> onPlayButtonClicked());
 
         sunriseJpMenuItem.addActionListener(e -> sunriseJpSelected());
-        rewrittenMenuItem.addActionListener(e -> onRewrittenSelected());
 
         optionsMenuItem.addActionListener(e -> onOptionsClicked());
 
@@ -360,16 +308,8 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
 
     private void sunriseJpSelected() {
         LOG.info("Sunrise JP server selected");
-        rewrittenMenuItem.setSelected(false);
         sunriseJpMenuItem.setSelected(true);
         // TODO: Switch to Sunrise JP server
-    }
-
-    private void onRewrittenSelected() {
-        LOG.info("Rewritten server selected");
-        sunriseJpMenuItem.setSelected(false);
-        rewrittenMenuItem.setSelected(true);
-        // TODO: Switch to Rewritten server
     }
 
     private void onOptionsClicked() {
@@ -377,22 +317,7 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
         dialog.setVisible(true);
 
         if (dialog.isSaved()) {
-            saveConfigToFile();
-        }
-    }
-
-    private void saveConfigToFile() {
-        var configFilePath = Path.of(CONFIG_FILE);
-        try {
-            OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configFilePath.toFile(), config);
-            LOG.debug("Config saved");
-        } catch (IOException e) {
-            LOG.error("Failed to save config", e);
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Failed to save accounts to file: " + e.getMessage(),
-                    "Save Error",
-                    JOptionPane.ERROR_MESSAGE);
+            configService.saveConfigToFile(config);
         }
     }
 
@@ -401,9 +326,9 @@ public class UltiLauncher<R extends APIResponse, T extends Launcher<R>> extends 
             tableModel.setValueAt(false, i, END_COLUMN);
             var account = accounts.get(i);
             int finalI = i;
-            activeAccountManager.findProcessForAccount(account).ifPresent(process -> {
-                endAccount(finalI, process, account);
-            });
+            activeAccountManager
+                    .findProcessForAccount(account)
+                    .ifPresent(process -> endAccount(finalI, process, account));
         }
         activeAccountManager.clear();
     }

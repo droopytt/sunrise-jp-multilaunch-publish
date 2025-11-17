@@ -2,6 +2,7 @@ package com.malt.multilaunch.window;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
+import com.google.inject.Inject;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
@@ -21,12 +22,13 @@ public class WindowSwapService {
     private static final Logger LOG = LoggerFactory.getLogger(WindowSwapService.class);
     private final ActiveAccountManager activeAccountManager;
     private final MultiControllerService multiControllerService;
-    private AtomicReference<Account> firstSelectedAccount = new AtomicReference<>();
-    private ScheduledExecutorService swapScheduler = newSingleThreadScheduledExecutor();
+    private final AtomicReference<Account> firstSelectedAccount = new AtomicReference<>();
+    private final ScheduledExecutorService swapScheduler = newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> swapTimeout = null;
     private NativeMouseListener nativeMouseListener;
     private NativeKeyListener nativeAltKeyListener;
 
+    @Inject
     public WindowSwapService(ActiveAccountManager activeAccountManager, MultiControllerService multiControllerService) {
         this.activeAccountManager = activeAccountManager;
         this.multiControllerService = multiControllerService;

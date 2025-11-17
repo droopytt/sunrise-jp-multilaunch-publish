@@ -1,7 +1,6 @@
 package com.malt.multilaunch.hotkeys;
 
 import com.malt.multilaunch.model.Account;
-import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import com.malt.multilaunch.window.WindowService;
 import java.util.Comparator;
@@ -13,17 +12,14 @@ public class SnapWindowsAction implements Runnable {
 
     private final ActiveAccountManager activeAccountManager;
     private final WindowService windowService;
-    private final MultiControllerService multiControllerService;
     private final Supplier<List<Account>> accountSupplier;
 
     public SnapWindowsAction(
             ActiveAccountManager activeAccountManager,
             WindowService windowService,
-            MultiControllerService multiControllerService,
             Supplier<List<Account>> accountSupplier) {
         this.activeAccountManager = activeAccountManager;
         this.windowService = windowService;
-        this.multiControllerService = multiControllerService;
         this.accountSupplier = accountSupplier;
     }
 

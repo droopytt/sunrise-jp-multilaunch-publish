@@ -22,6 +22,12 @@ public interface WindowService {
         return new DefaultWindowService();
     }
 
+    List<Rectangle> createTargetWindowRects(Rectangle workingArea, int numWindows, int offset);
+
+    List<Rectangle> createDualOnlyRects(Rectangle workingArea, int offset);
+
+    List<Rectangle> groupIntoFours(int numWindows, List<Rectangle> windowRects);
+
     void resizeWindowsForProcesses(List<Account> accounts, ActiveAccountManager activeAccountManager);
 
     void resizeWindowsWithRectangles(
@@ -74,6 +80,7 @@ public interface WindowService {
             return new Dimension(borderWidth, borderHeight);
         }
 
+        @Override
         public List<Rectangle> createTargetWindowRects(Rectangle workingArea, int numWindows, int offset) {
             var windowRects = new ArrayList<Rectangle>();
 
@@ -110,7 +117,8 @@ public interface WindowService {
             return groupIntoFours(numWindows, windowRects);
         }
 
-        private List<Rectangle> createDualOnlyRects(Rectangle workingArea, int offset) {
+        @Override
+        public List<Rectangle> createDualOnlyRects(Rectangle workingArea, int offset) {
             var windowData = WindowData.create(workingArea, 4, offset);
             var left = new Rectangle(
                     windowData.startX(),
@@ -125,7 +133,8 @@ public interface WindowService {
             return List.of(left, right);
         }
 
-        private List<Rectangle> groupIntoFours(int numWindows, List<Rectangle> windowRects) {
+        @Override
+        public List<Rectangle> groupIntoFours(int numWindows, List<Rectangle> windowRects) {
             var groupedRects = new ArrayList<List<Rectangle>>();
             for (int i = 0; i < windowRects.size(); i += 2) {
                 List<Rectangle> group = new ArrayList<>();
