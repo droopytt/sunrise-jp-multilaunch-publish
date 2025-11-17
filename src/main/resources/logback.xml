@@ -25,6 +25,9 @@
 
     <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/debug.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>logs/debug.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>7</maxHistory>
@@ -34,7 +37,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.malt.multilaunch" level="debug"/>
+    <logger name="com.malt.multilaunch" level="trace"/>
 
     <root level="debug">
         <appender-ref ref="STDOUT" />
