@@ -120,16 +120,15 @@ public interface WindowService {
         @Override
         public List<Rectangle> createDualOnlyRects(Rectangle workingArea, int offset) {
             var windowData = WindowData.create(workingArea, 4, offset);
+            var extraHeight = (int) (windowData.height() * (MULTIPLIER));
             var left = new Rectangle(
-                    windowData.startX(),
-                    windowData.startY(),
-                    windowData.width(),
-                    windowData.height() + windowData.height() + (int) (windowData.height() * (MULTIPLIER / 100f)));
+                    windowData.startX(), windowData.startY(), windowData.width(), windowData.height() + extraHeight);
             var right = new Rectangle(
-                    windowData.startX() + windowData.incrementX() - offset,
+                    windowData.startX() + windowData.incrementX(),
                     windowData.startY(),
                     windowData.width(),
-                    windowData.height() + (int) (windowData.height() * (MULTIPLIER / 100f)));
+                    windowData.height() + extraHeight);
+            LOG.trace("Window data for toons was {}, offset was {}", List.of(left, right), offset);
             return List.of(left, right);
         }
 
