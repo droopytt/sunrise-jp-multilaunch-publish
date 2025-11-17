@@ -19,6 +19,10 @@ Shortcuts:
 Connects with multicontroller v2025.11.0 onwards and swaps follow. Behaviour is configurable
 and optional.
 
+
+## Download
+
+There are releases available under the releases tab of this repository.
 ## Development
 
 Requires **Java 25** which you can grab from [here](https://adoptium.net/en-GB/temurin/releases).

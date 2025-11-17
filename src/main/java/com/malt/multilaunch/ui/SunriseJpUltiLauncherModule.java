@@ -88,23 +88,19 @@ public class SunriseJpUltiLauncherModule extends AbstractModule {
     @Provides
     @Singleton
     public AccountService accountService(Launcher<?> launcher) {
-        return AccountService.create(launcher);
-    }
-
-    @Provides
-    @Singleton
-    public List<Account> accounts(AccountService accountService) {
-        return accountService.findAccounts();
+        var accountService = AccountService.create(launcher);
+        accountService.loadAccountsFromFile();
+        return accountService;
     }
 
     @Provides
     @Singleton
     public HotkeyService hotkeyService(
-            List<Account> accounts,
+            AccountService accountService,
             ActiveAccountManager activeAccountManager,
             MultiControllerService multiControllerService,
             WindowService windowService) {
-        var accountSupplier = (Supplier<List<Account>>) () -> accounts.stream()
+        var accountSupplier = (Supplier<List<Account>>) () -> accountService.getLoadedAccounts().stream()
                 .filter(acc -> activeAccountManager.findProcessForAccount(acc).isPresent())
                 .toList();
         return HotkeyService.builder()

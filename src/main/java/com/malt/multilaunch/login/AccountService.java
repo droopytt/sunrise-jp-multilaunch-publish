@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public interface AccountService {
-    List<Account> findAccounts();
+    void loadAccountsFromFile();
+
+    List<Account> getLoadedAccounts();
 
     void saveAccounts(Path path, List<Account> accounts) throws IOException;
 
@@ -21,18 +23,21 @@ public interface AccountService {
         return new DefaultAccountService(launcher);
     }
 
+    void addAccount(Account newAccount);
+
     class DefaultAccountService implements AccountService {
         private static final Logger LOG = LoggerFactory.getLogger(DefaultAccountService.class);
         private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
         private final Launcher<? extends APIResponse> launcher;
+        private List<Account> accounts;
 
         public DefaultAccountService(Launcher<? extends APIResponse> launcher) {
             this.launcher = launcher;
         }
 
         @Override
-        public List<Account> findAccounts() {
+        public void loadAccountsFromFile() {
             var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
             var initialAccounts = List.of(new Account("account1", "pass1"));
             var accounts = initialAccounts;
@@ -51,6 +56,11 @@ public interface AccountService {
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Could not load accounts - ensure JSON format is filled out");
             }
+            this.accounts = accounts;
+        }
+
+        @Override
+        public List<Account> getLoadedAccounts() {
             return accounts;
         }
 
@@ -63,6 +73,11 @@ public interface AccountService {
                 LOG.error("Failed to save accounts", e);
                 throw e;
             }
+        }
+
+        @Override
+        public void addAccount(Account newAccount) {
+            accounts.add(newAccount);
         }
 
         private static void assertFileExists(Path path, Runnable onCreateAction) {

@@ -48,7 +48,6 @@ public class UltiLauncher extends JFrame {
     // Member fields
     private final Config config;
     private final Launcher<?> launcher;
-    private final List<Account> accounts;
     private final ActiveAccountManager activeAccountManager;
     private final WindowSwapService windowSwapService;
     protected final MultiControllerService multiControllerService;
@@ -65,7 +64,6 @@ public class UltiLauncher extends JFrame {
             WindowSwapService windowSwapService,
             Launcher<?> launcher,
             AccountService accountService,
-            List<Account> accounts,
             HotkeyService hotkeyService) {
         this.configService = configService;
         this.config = config;
@@ -74,14 +72,13 @@ public class UltiLauncher extends JFrame {
         this.windowSwapService = windowSwapService;
         this.launcher = launcher;
         this.accountService = accountService;
-        this.accounts = accounts;
         this.hotkeyService = hotkeyService;
     }
 
     public void initialize() {
         validateWorkingPath();
         initComponents();
-        loadAccountsIntoTable(accounts);
+        loadAccountsIntoTable(accountService.getLoadedAccounts());
         setupListeners();
 
         hotkeyService.register();
@@ -104,7 +101,7 @@ public class UltiLauncher extends JFrame {
             LOG.debug("Saving accounts before exit...");
             var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
             try {
-                accountService.saveAccounts(accountFilePath, accounts);
+                accountService.saveAccounts(accountFilePath, accountService.getLoadedAccounts());
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(
                         this,
@@ -174,17 +171,26 @@ public class UltiLauncher extends JFrame {
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         ((DefaultTableCellRenderer) accountTable.getTableHeader().getDefaultRenderer())
                 .setHorizontalAlignment(SwingConstants.CENTER);
+        accountTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        accountTable.setRowHeight(24);
+        accountTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
 
         for (int i = 0; i < accountTable.getColumnCount(); i++) {
             if (!accountTable.getColumnClass(i).equals(Boolean.class)) {
                 accountTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
             }
         }
+
         accountTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         setupCheckboxColumn(accountTable, LOGIN_COLUMN);
+        accountTable.getColumnModel().getColumn(LOGIN_COLUMN).setPreferredWidth(75);
+        accountTable.getColumnModel().getColumn(LOGIN_COLUMN).setMaxWidth(75);
 
         accountTable.getColumnModel().getColumn(TOON_COLUMN).setPreferredWidth(150);
         accountTable.getColumnModel().getColumn(TOON_COLUMN).setMaxWidth(150);
+
+        UIManager.put("CheckBox.font", new Font("SansSerif", Font.PLAIN, 16));
+        SwingUtilities.updateComponentTreeUI(this);
 
         setupCheckboxColumn(accountTable, END_COLUMN);
         accountTable
@@ -251,7 +257,7 @@ public class UltiLauncher extends JFrame {
         dialog.setVisible(true);
 
         if (dialog.isSaved()) {
-            accounts.add(newAccount);
+            accountService.addAccount(newAccount);
             tableModel.addRow(new Object[] {newAccount.wantLogin(), newAccount.name(), false});
         }
     }
@@ -261,6 +267,7 @@ public class UltiLauncher extends JFrame {
             accountTable.getCellEditor().stopCellEditing();
         }
 
+        var accounts = accountService.getLoadedAccounts();
         for (int i = 0; i < accounts.size(); i++) {
             var value = tableModel.getValueAt(i, LOGIN_COLUMN);
             if (value instanceof Boolean boolValue) {
@@ -322,6 +329,7 @@ public class UltiLauncher extends JFrame {
     }
 
     private void onEndAllClicked() {
+        var accounts = accountService.getLoadedAccounts();
         for (int i = 0; i < accounts.size(); i++) {
             tableModel.setValueAt(false, i, END_COLUMN);
             var account = accounts.get(i);
@@ -340,6 +348,7 @@ public class UltiLauncher extends JFrame {
     }
 
     private void onTableCellClicked(int row, int col) {
+        var accounts = accountService.getLoadedAccounts();
         if (col == LOGIN_COLUMN) {
             var account = accounts.get(row);
             var valueAt = (boolean) tableModel.getValueAt(row, col);
