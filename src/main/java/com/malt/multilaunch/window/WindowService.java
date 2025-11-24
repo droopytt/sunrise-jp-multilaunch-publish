@@ -164,10 +164,14 @@ public interface WindowService {
 
         @Override
         public void resizeWindowsForProcesses(List<Account> accounts, ActiveAccountManager activeAccountManager) {
-            var screen = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                    .getDefaultScreenDevice()
-                    .getDefaultConfiguration()
-                    .getBounds();
+            var physicalSize = DPIUtils.getPhysicalScreenSize();
+
+            double scalingFactor = DPIUtils.getPrimaryMonitorScalingFactor();
+            LOG.debug(
+                    "Using scaling factor: {} for screen size: {}x{}",
+                    scalingFactor,
+                    physicalSize.width,
+                    physicalSize.height);
 
             var insets = Toolkit.getDefaultToolkit()
                     .getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -175,10 +179,10 @@ public interface WindowService {
                             .getDefaultConfiguration());
 
             var workingArea = new Rectangle(
-                    screen.x + insets.left,
-                    screen.y + insets.top,
-                    screen.width - insets.left - insets.right,
-                    screen.height - insets.top - insets.bottom);
+                    insets.left,
+                    insets.top,
+                    physicalSize.width - insets.left - insets.right,
+                    physicalSize.height - insets.top - insets.bottom);
 
             var testAccount = accounts.stream()
                     .map(activeAccountManager::findProcessForAccount)
