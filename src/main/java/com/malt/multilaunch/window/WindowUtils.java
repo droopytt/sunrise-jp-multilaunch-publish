@@ -5,13 +5,34 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HWND;
+import com.sun.jna.platform.win32.WinDef.LPARAM;
 import com.sun.jna.platform.win32.WinDef.RECT;
+import com.sun.jna.platform.win32.WinDef.WPARAM;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 
 public final class WindowUtils {
 
+    public static void sendCloseSignal(Process process) {
+        int targetPid = (int) process.pid();
+
+        User32Ext.INSTANCE.EnumWindows(
+                (hWnd, data) -> {
+                    IntByReference pidRef = new IntByReference();
+                    User32Ext.INSTANCE.GetWindowThreadProcessId(hWnd, pidRef);
+
+                    if (pidRef.getValue() == targetPid) {
+                        User32Ext.INSTANCE.PostMessageW(hWnd, User32Ext.WM_CLOSE, new WPARAM(0), new LPARAM(0));
+                    }
+                    return true;
+                },
+                null);
+    }
+
     private interface User32Ext extends StdCallLibrary {
+        int WM_CLOSE = 0x0010;
+
+        boolean PostMessageW(HWND hWnd, int msg, WPARAM wParam, LPARAM lParam);
 
         User32Ext INSTANCE = Native.load("user32", User32Ext.class);
 

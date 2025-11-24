@@ -8,11 +8,9 @@ import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.window.WindowSwapService;
+import com.malt.multilaunch.window.WindowUtils;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -234,7 +232,12 @@ public class UltiLauncher extends JFrame {
 
         optionsMenuItem.addActionListener(e -> onOptionsClicked());
 
-        endAllMenuItem.addActionListener(e -> onEndAllClicked());
+        endAllMenuItem.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onEndAllClicked(MouseButton.fromValue(e.getButton()));
+            }
+        });
 
         untickAllMenuItem.addActionListener(e -> onUntickAllClicked());
 
@@ -245,7 +248,7 @@ public class UltiLauncher extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 int row = accountTable.rowAtPoint(e.getPoint());
                 int col = accountTable.columnAtPoint(e.getPoint());
-                onTableCellClicked(row, col);
+                onTableCellClicked(row, col, MouseButton.fromValue(e.getButton()));
             }
         });
     }
@@ -328,7 +331,7 @@ public class UltiLauncher extends JFrame {
         }
     }
 
-    private void onEndAllClicked() {
+    private void onEndAllClicked(MouseButton mouseButton) {
         var accounts = accountService.getLoadedAccounts();
         for (int i = 0; i < accounts.size(); i++) {
             tableModel.setValueAt(false, i, END_COLUMN);
@@ -336,7 +339,7 @@ public class UltiLauncher extends JFrame {
             int finalI = i;
             activeAccountManager
                     .findProcessForAccount(account)
-                    .ifPresent(process -> endAccount(finalI, process, account));
+                    .ifPresent(process -> endAccount(finalI, process, account, mouseButton));
         }
         activeAccountManager.clear();
     }
@@ -347,7 +350,7 @@ public class UltiLauncher extends JFrame {
         }
     }
 
-    private void onTableCellClicked(int row, int col) {
+    private void onTableCellClicked(int row, int col, MouseButton mouseButton) {
         var accounts = accountService.getLoadedAccounts();
         if (col == LOGIN_COLUMN) {
             var account = accounts.get(row);
@@ -370,15 +373,21 @@ public class UltiLauncher extends JFrame {
             var account = accounts.get(row);
             activeAccountManager.findProcessForAccount(account).ifPresent(process -> {
                 if (process.isAlive()) {
-                    endAccount(row, process, account);
+                    endAccount(row, process, account, mouseButton);
                 }
             });
         }
     }
 
-    private void endAccount(int row, Process process, Account account) {
-        process.destroy();
-        deregisterAccount(row, account);
+    private void endAccount(int row, Process process, Account account, MouseButton mouseButton) {
+        if (mouseButton == MouseButton.LEFT || mouseButton == MouseButton.RIGHT) {
+            if (mouseButton == MouseButton.LEFT) {
+                process.destroy();
+            } else {
+                WindowUtils.sendCloseSignal(process);
+            }
+            deregisterAccount(row, account);
+        }
     }
 
     private void deregisterAccount(int row, Account account) {
