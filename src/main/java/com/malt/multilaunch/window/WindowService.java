@@ -1,6 +1,7 @@
 package com.malt.multilaunch.window;
 
 import com.malt.multilaunch.model.Account;
+import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.multicontroller.WindowAssignRequest;
 import com.malt.multilaunch.ui.ActiveAccountManager;
@@ -28,18 +29,21 @@ public interface WindowService {
 
     List<Rectangle> groupIntoFours(int numWindows, List<Rectangle> windowRects);
 
-    void resizeWindowsForProcesses(List<Account> accounts, ActiveAccountManager activeAccountManager);
+    void resizeWindowsForAccounts(List<Account> accounts, ActiveAccountManager activeAccountManager, Config config);
 
     void resizeWindowsWithRectangles(
-            List<Account> openAccounts, ActiveAccountManager activeAccountManager, List<Rectangle> list);
+            List<Account> openAccounts, ActiveAccountManager activeAccountManager, List<Rectangle> list, Config config);
 
     void assignControllerToWindows(List<Process> processes, MultiControllerService multiControllerService);
 
     class DefaultWindowService implements WindowService {
 
         private static void resize(
-                List<Account> accounts, ActiveAccountManager activeAccountManager, List<Rectangle> rectangles) {
-            if (accounts.size() < 2) {
+                List<Account> accounts,
+                ActiveAccountManager activeAccountManager,
+                List<Rectangle> rectangles,
+                Config config) {
+            if (accounts.size() < 2 && !config.stickySessions()) {
                 return;
             }
             if (rectangles.size() < accounts.size()) {
@@ -49,23 +53,15 @@ public interface WindowService {
                         accounts.size());
             } else {
                 for (int i = 0; i < accounts.size(); i++) {
-                    var finalI = i;
+                    var account = accounts.get(i);
+                    var next = activeAccountManager.findWindowRect(account).orElse(rectangles.get(i));
                     CompletableFuture.runAsync(() -> {
-                        var account = accounts.get(finalI);
                         var process = activeAccountManager
                                 .findProcessForAccount(account)
                                 .orElseThrow();
                         var hwnd = WindowUtils.getWindowHandleForProcessId((int) process.pid());
-                        var oldWindowRect = WindowUtils.getWindowRect(hwnd);
-                        var next = rectangles.get(finalI);
                         WindowUtils.resize(hwnd, next.x, next.y, next.width, next.height);
                         activeAccountManager.putWindow(account, next);
-                        var newWindowRect = WindowUtils.getWindowRect(hwnd);
-                        LOG.trace(
-                                "Window rect for pid {} was {} and is now {}",
-                                process.pid(),
-                                oldWindowRect,
-                                newWindowRect);
                     });
                 }
             }
@@ -163,7 +159,8 @@ public interface WindowService {
         }
 
         @Override
-        public void resizeWindowsForProcesses(List<Account> accounts, ActiveAccountManager activeAccountManager) {
+        public void resizeWindowsForAccounts(
+                List<Account> accounts, ActiveAccountManager activeAccountManager, Config config) {
             var physicalSize = DPIUtils.getPhysicalScreenSize();
 
             double scalingFactor = DPIUtils.getPrimaryMonitorScalingFactor();
@@ -198,13 +195,16 @@ public interface WindowService {
 
             var rectangles = createTargetWindowRects(workingArea, accounts.size(), offset);
 
-            resizeWindowsWithRectangles(accounts, activeAccountManager, rectangles);
+            resizeWindowsWithRectangles(accounts, activeAccountManager, rectangles, config);
         }
 
         @Override
         public void resizeWindowsWithRectangles(
-                List<Account> accounts, ActiveAccountManager activeAccountManager, List<Rectangle> rectangles) {
-            resize(accounts, activeAccountManager, rectangles);
+                List<Account> accounts,
+                ActiveAccountManager activeAccountManager,
+                List<Rectangle> rectangles,
+                Config config) {
+            resize(accounts, activeAccountManager, rectangles, config);
         }
 
         @Override

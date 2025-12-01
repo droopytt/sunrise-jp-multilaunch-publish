@@ -12,6 +12,7 @@ public class Config {
     private boolean enableMultiControllerIntegration;
     private boolean swapMultiControllerAssignmentsOnWindowSwap;
     private int startingCore;
+    private boolean stickySessions;
     private Path sunriseWorkingDir;
 
     public Config(
@@ -19,10 +20,12 @@ public class Config {
             @JsonProperty("swapMultiControllerAssignmentsOnWindowSwap")
                     boolean swapMultiControllerAssignmentsOnWindowSwap,
             @JsonProperty("startingCore") int startingCore,
+            @JsonProperty("stickySessions") boolean stickySessions,
             @JsonProperty("sunriseWorkingDir") Path sunriseWorkingDir) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
+        this.stickySessions = stickySessions;
         this.sunriseWorkingDir = sunriseWorkingDir == null ? defaultJapanPath() : sunriseWorkingDir;
     }
 
@@ -34,6 +37,11 @@ public class Config {
     @JsonGetter
     public boolean swapMultiControllerAssignmentsOnWindowSwap() {
         return swapMultiControllerAssignmentsOnWindowSwap;
+    }
+
+    @JsonGetter
+    public boolean stickySessions() {
+        return stickySessions;
     }
 
     @JsonGetter
@@ -53,6 +61,11 @@ public class Config {
     @JsonSetter
     public void setSwapMultiControllerAssignmentsOnWindowSwap(boolean multiControllerSwaps) {
         this.swapMultiControllerAssignmentsOnWindowSwap = multiControllerSwaps;
+    }
+
+    @JsonSetter
+    public void setStickySessions(boolean stickySessions) {
+        this.stickySessions = stickySessions;
     }
 
     @JsonGetter

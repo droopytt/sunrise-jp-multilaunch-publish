@@ -31,6 +31,8 @@ public class UltiLauncher extends JFrame {
     public static final int TOON_COLUMN = 1;
     public static final int END_COLUMN = 2;
     public static final String WINDOW_TITLE = "Ultilaunch";
+    public static final Color GREEN = new Color(0, 128, 0);
+    public static final Color STICKY_SESSIONS_OFFLINE_COLOR = new Color(247, 150, 25);
 
     private JTable accountTable;
     private DefaultTableModel tableModel;
@@ -200,7 +202,12 @@ public class UltiLauncher extends JFrame {
 
                     if (renderer instanceof JCheckBox checkBox) {
                         checkBox.setOpaque(true);
-                        checkBox.setBackground(Boolean.TRUE.equals(value) ? new Color(0, 200, 0, 80) : Color.RED);
+                        var targetAccount = accountService.getLoadedAccounts().get(row);
+                        var offlineColor = config.stickySessions()
+                                        && activeAccountManager.accounts().contains(targetAccount)
+                                ? STICKY_SESSIONS_OFFLINE_COLOR
+                                : Color.RED;
+                        checkBox.setBackground(Boolean.TRUE.equals(value) ? GREEN : offlineColor);
                         checkBox.setSelected(false);
                     }
                     return renderer;
@@ -282,8 +289,15 @@ public class UltiLauncher extends JFrame {
 
         CompletableFuture.runAsync(() -> {
             var accountsToLogin = accounts.stream()
-                    .filter(account ->
-                            activeAccountManager.findProcessForAccount(account).isEmpty())
+                    .filter(account -> {
+                        if (config.stickySessions()) {
+                            var index = accounts.indexOf(account);
+                            return !(boolean) accountTable.getValueAt(index, END_COLUMN);
+                        }
+                        return activeAccountManager
+                                .findProcessForAccount(account)
+                                .isEmpty();
+                    })
                     .filter(Account::wantLogin)
                     .toList();
 
@@ -293,14 +307,19 @@ public class UltiLauncher extends JFrame {
                         activeAccountManager.addProcess(account, process);
 
                         CompletableFuture.runAsync(() -> {
-                            try {
-                                process.waitFor();
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            deregisterAccount(accounts.indexOf(account), account);
-                            launcher.onProcessEnd(process);
-                        });
+                                    try {
+                                        var exitCode = process.waitFor();
+                                        LOG.debug("Process {} exited with code {}", process.pid(), exitCode);
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    deregisterAccount(accounts.indexOf(account), account);
+                                    launcher.onProcessEnd(process);
+                                })
+                                .exceptionally(throwable -> {
+                                    LOG.error("Error occurred: {}", throwable.getMessage());
+                                    return null;
+                                });
 
                         SwingUtilities.invokeLater(() -> {
                             int row = accounts.indexOf(account);
@@ -312,7 +331,11 @@ public class UltiLauncher extends JFrame {
             CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
                     .orTimeout(30, TimeUnit.SECONDS)
                     .thenRunAsync(() -> playButton.setEnabled(true))
-                    .thenRun(() -> launcher.performPostLoginOverrides(accountsToLogin, activeAccountManager));
+                    .thenRun(() -> launcher.performPostLoginOverrides(accountsToLogin, activeAccountManager, config))
+                    .exceptionally(throwable -> {
+                        LOG.error("Error occurred {}", throwable.getMessage());
+                        return null;
+                    });
         });
     }
 
@@ -380,8 +403,9 @@ public class UltiLauncher extends JFrame {
     }
 
     private void endAccount(int row, Process process, Account account, MouseButton mouseButton) {
-        if (mouseButton == MouseButton.LEFT || mouseButton == MouseButton.RIGHT) {
-            if (mouseButton == MouseButton.LEFT) {
+        if (mouseButton == com.malt.multilaunch.ui.MouseButton.LEFT
+                || mouseButton == com.malt.multilaunch.ui.MouseButton.RIGHT) {
+            if (mouseButton == com.malt.multilaunch.ui.MouseButton.LEFT) {
                 process.destroy();
             } else {
                 WindowUtils.sendCloseSignal(process);
@@ -391,7 +415,9 @@ public class UltiLauncher extends JFrame {
     }
 
     private void deregisterAccount(int row, Account account) {
-        activeAccountManager.removeAccount(account);
+        if (!config.stickySessions()) {
+            activeAccountManager.removeAccount(account);
+        }
         tableModel.setValueAt(false, row, END_COLUMN);
     }
 

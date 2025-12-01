@@ -8,6 +8,7 @@ public class ConfigDialog extends JDialog {
     private final Config config;
     private JCheckBox multiControllerIntegrationCheckbox;
     private JCheckBox moveControllerAssignmentsWithSwaps;
+    private JCheckBox stickySessions;
     private JTextField startingCore;
     private JButton saveButton;
 
@@ -21,7 +22,7 @@ public class ConfigDialog extends JDialog {
         populateFields();
         setupListeners();
 
-        setSize(340, 180);
+        setSize(340, 240);
         setLocationRelativeTo(parent);
         setResizable(false);
     }
@@ -55,6 +56,16 @@ public class ConfigDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0;
+        add(new JLabel("Enable sticky sessions"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        stickySessions = new JCheckBox();
+        add(stickySessions, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.weightx = 0;
         add(new JLabel("Starting core for affinity assignment (Requires restart):"), gbc);
 
         gbc.gridx = 1;
@@ -63,7 +74,7 @@ public class ConfigDialog extends JDialog {
         add(startingCore, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(15, 10, 10, 10);
         saveButton = new JButton("Save");
@@ -74,6 +85,7 @@ public class ConfigDialog extends JDialog {
     private void populateFields() {
         multiControllerIntegrationCheckbox.setSelected(config.enableMultiControllerIntegration());
         moveControllerAssignmentsWithSwaps.setSelected(config.swapMultiControllerAssignmentsOnWindowSwap());
+        stickySessions.setSelected(config.stickySessions());
         startingCore.setText(Integer.toString(config.startingCore()));
     }
 
@@ -83,10 +95,9 @@ public class ConfigDialog extends JDialog {
     }
 
     private void onSaveClicked() {
-        var multiControllerIntegration = multiControllerIntegrationCheckbox.isSelected();
-        var multiControllerSwaps = moveControllerAssignmentsWithSwaps.isSelected();
-        config.setEnableMultiControllerIntegration(multiControllerIntegration);
-        config.setSwapMultiControllerAssignmentsOnWindowSwap(multiControllerSwaps);
+        config.setEnableMultiControllerIntegration(multiControllerIntegrationCheckbox.isSelected());
+        config.setSwapMultiControllerAssignmentsOnWindowSwap(moveControllerAssignmentsWithSwaps.isSelected());
+        config.setStickySessions(stickySessions.isSelected());
         try {
             config.setStartingCore(Integer.parseInt(startingCore.getText()));
         } catch (NumberFormatException e) {

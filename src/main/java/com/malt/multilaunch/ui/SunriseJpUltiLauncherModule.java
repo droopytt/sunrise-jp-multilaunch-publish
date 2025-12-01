@@ -96,6 +96,7 @@ public class SunriseJpUltiLauncherModule extends AbstractModule {
     @Provides
     @Singleton
     public HotkeyService hotkeyService(
+            Config config,
             AccountService accountService,
             ActiveAccountManager activeAccountManager,
             MultiControllerService multiControllerService,
@@ -108,10 +109,10 @@ public class SunriseJpUltiLauncherModule extends AbstractModule {
                 .withHotkeyMapping(
                         NativeKeyEvent.VC_R,
                         new ResetWindowsAction(
-                                activeAccountManager, windowService, multiControllerService, accountSupplier))
+                                config, activeAccountManager, windowService, multiControllerService, accountSupplier))
                 .withHotkeyMapping(
                         NativeKeyEvent.VC_S,
-                        new SnapWindowsAction(activeAccountManager, windowService, accountSupplier))
+                        new SnapWindowsAction(config, activeAccountManager, windowService, accountSupplier))
                 .build();
     }
 

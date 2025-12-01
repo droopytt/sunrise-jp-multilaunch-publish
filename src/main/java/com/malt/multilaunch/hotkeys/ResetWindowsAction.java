@@ -1,6 +1,7 @@
 package com.malt.multilaunch.hotkeys;
 
 import com.malt.multilaunch.model.Account;
+import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import com.malt.multilaunch.window.WindowService;
@@ -12,16 +13,19 @@ import java.util.function.Supplier;
 
 public class ResetWindowsAction implements Runnable {
 
+    private final Config config;
     private final ActiveAccountManager activeAccountManager;
     private final WindowService windowService;
     private final MultiControllerService multiControllerService;
     private final Supplier<List<Account>> accountSupplier;
 
     public ResetWindowsAction(
+            Config config,
             ActiveAccountManager activeAccountManager,
             WindowService windowService,
             MultiControllerService multiControllerService,
             Supplier<List<Account>> accountSupplier) {
+        this.config = config;
         this.activeAccountManager = activeAccountManager;
         this.windowService = windowService;
         this.multiControllerService = multiControllerService;
@@ -37,7 +41,7 @@ public class ResetWindowsAction implements Runnable {
                 .flatMap(Optional::stream)
                 .toList();
         activeAccountManager.resetWindows();
-        windowService.resizeWindowsForProcesses(openAccounts, activeAccountManager);
+        windowService.resizeWindowsForAccounts(openAccounts, activeAccountManager, config);
         reassignControllersForProcesses(processes);
     }
 

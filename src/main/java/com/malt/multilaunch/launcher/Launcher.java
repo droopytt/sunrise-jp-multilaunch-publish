@@ -50,7 +50,8 @@ public abstract class Launcher<T extends APIResponse> {
 
     protected abstract Map<String, String> additionalLoginArgs();
 
-    public abstract void performPostLoginOverrides(List<Account> accounts, ActiveAccountManager activeAccountManager);
+    public abstract void performPostLoginOverrides(
+            List<Account> accounts, ActiveAccountManager activeAccountManager, Config config);
 
     public abstract Map<String, String> getEnvironmentVariables(T response);
 

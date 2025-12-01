@@ -43,7 +43,8 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
     }
 
     @Override
-    public void performPostLoginOverrides(List<Account> accounts, ActiveAccountManager activeAccountManager) {
+    public void performPostLoginOverrides(
+            List<Account> accounts, ActiveAccountManager activeAccountManager, Config config) {
         CompletableFuture.supplyAsync(() -> {
                     var processes = accounts.stream()
                             .map(activeAccountManager::findProcessForAccount)
@@ -55,7 +56,7 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
                 })
                 .thenAccept(processes -> {
                     CompletableFuture.runAsync(
-                            () -> windowService.resizeWindowsForProcesses(accounts, activeAccountManager));
+                            () -> windowService.resizeWindowsForAccounts(accounts, activeAccountManager, config));
 
                     CompletableFuture.runAsync(
                             () -> windowService.assignControllerToWindows(processes, multiControllerService));
