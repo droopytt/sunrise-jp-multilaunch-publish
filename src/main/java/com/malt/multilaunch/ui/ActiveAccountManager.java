@@ -5,6 +5,8 @@ import java.awt.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Collections.unmodifiableSet;
+
 public class ActiveAccountManager {
     private final Map<Account, Process> activeProcesses;
     private final Map<Account, Rectangle> windowRects;
@@ -32,7 +34,7 @@ public class ActiveAccountManager {
     }
 
     public Set<Account> activeSession() {
-        return Collections.unmodifiableSet(activeSession);
+        return unmodifiableSet(activeSession);
     }
 
     public boolean isInSession(Account account) {
@@ -69,9 +71,5 @@ public class ActiveAccountManager {
         activeProcesses.clear();
         activeSession.clear();
         windowRects.clear();
-    }
-
-    public void endAllSessions() {
-        clear();
     }
 }

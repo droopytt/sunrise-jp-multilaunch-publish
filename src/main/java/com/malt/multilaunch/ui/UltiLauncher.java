@@ -57,6 +57,7 @@ public class UltiLauncher extends JFrame {
     private final AccountService accountService;
     private final HotkeyService hotkeyService;
     private final ConfigService configService;
+    private boolean sessionLocked;
 
     @Inject
     public UltiLauncher(
@@ -341,6 +342,7 @@ public class UltiLauncher extends JFrame {
                     .orTimeout(30, TimeUnit.SECONDS)
                     .thenRunAsync(() -> playButton.setEnabled(true))
                     .thenRun(() -> launcher.performPostLoginOverrides(accountsToLogin, activeAccountManager, config))
+                    .thenRun(() -> this.sessionLocked = true)
                     .exceptionally(throwable -> {
                         LOG.error("Error occurred {}", throwable.getMessage());
                         return null;
@@ -391,6 +393,7 @@ public class UltiLauncher extends JFrame {
 
         if (endSessions) {
             activeAccountManager.clear();
+            sessionLocked = false;
         }
     }
 
@@ -403,8 +406,13 @@ public class UltiLauncher extends JFrame {
     private void onTableCellClicked(int row, int col, MouseButton mouseButton) {
         var accounts = accountService.getLoadedAccounts();
         if (col == LOGIN_COLUMN) {
-            var account = accounts.get(row);
             var valueAt = (boolean) tableModel.getValueAt(row, col);
+            if(sessionLocked && !valueAt) {
+                JOptionPane.showMessageDialog(this, "Currently in a sticky session, please end all accounts before marking any accounts to log in");
+                tableModel.setValueAt(false, row, col);
+                return;
+            }
+            var account = accounts.get(row);
             account.setWantLogin(valueAt);
         } else if (col == TOON_COLUMN) {
             var account = accounts.get(row);
