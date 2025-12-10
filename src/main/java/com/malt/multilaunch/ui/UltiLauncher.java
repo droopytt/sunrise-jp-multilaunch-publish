@@ -364,7 +364,7 @@ public class UltiLauncher extends JFrame {
         if (dialog.isSaved()) {
             configService.saveConfigToFile(config);
         }
-        if(!config.stickySessions()) {
+        if (!config.stickySessions()) {
             sessionLocked = false;
         }
     }

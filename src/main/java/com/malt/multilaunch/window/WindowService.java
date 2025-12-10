@@ -54,7 +54,9 @@ public interface WindowService {
             } else {
                 for (int i = 0; i < accounts.size(); i++) {
                     var account = accounts.get(i);
-                    var next = config.stickySessions() ? activeAccountManager.findWindowRect(account).orElse(rectangles.get(i)) : rectangles.get(i);
+                    var next = config.stickySessions()
+                            ? activeAccountManager.findWindowRect(account).orElse(rectangles.get(i))
+                            : rectangles.get(i);
                     CompletableFuture.runAsync(() -> {
                         var process = activeAccountManager
                                 .findProcessForAccount(account)
