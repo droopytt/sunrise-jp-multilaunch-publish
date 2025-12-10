@@ -33,7 +33,7 @@ public class SnapWindowsAction implements Runnable {
         windowService.resizeWindowsWithRectangles(
                 openAccounts,
                 activeAccountManager,
-                activeAccountManager.accounts().stream()
+                activeAccountManager.activeAccounts().stream()
                         .sorted(Comparator.comparingInt(openAccounts::indexOf))
                         .map(activeAccountManager::findWindowRect)
                         .flatMap(Optional::stream)

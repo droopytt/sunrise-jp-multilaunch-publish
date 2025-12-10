@@ -33,6 +33,7 @@ public class UltiLauncher extends JFrame {
     public static final int LOGIN_COLUMN = 0;
     public static final int TOON_COLUMN = 1;
     public static final int END_COLUMN = 2;
+    public static final int AUDIO_COLUMN = 3;
     public static final String WINDOW_TITLE = "Ultilaunch";
     public static final Color GREEN = new Color(0, 128, 0);
     public static final Color STICKY_SESSIONS_OFFLINE_COLOR = new Color(247, 150, 25);
@@ -154,11 +155,11 @@ public class UltiLauncher extends JFrame {
 
         setJMenuBar(menuBar);
 
-        var columnNames = new String[] {"Login?", "Toon", "End?"};
+        var columnNames = new String[] {"Login?", "Toon", "End?", "Audio?"};
         tableModel = new DefaultTableModel(columnNames, LOGIN_COLUMN) {
             @Override
             public Class<?> getColumnClass(int column) {
-                if (column == LOGIN_COLUMN || column == END_COLUMN) {
+                if (column == LOGIN_COLUMN || column == END_COLUMN || column == AUDIO_COLUMN) {
                     return Boolean.class;
                 }
                 return String.class;
@@ -166,7 +167,7 @@ public class UltiLauncher extends JFrame {
 
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == LOGIN_COLUMN;
+                return column == LOGIN_COLUMN || column == AUDIO_COLUMN;
             }
         };
 
@@ -341,7 +342,11 @@ public class UltiLauncher extends JFrame {
                     .orTimeout(30, TimeUnit.SECONDS)
                     .thenRunAsync(() -> playButton.setEnabled(true))
                     .thenRun(() -> launcher.performPostLoginOverrides(accountsToLogin, activeAccountManager, config))
-                    .thenRun(() -> this.sessionLocked = true)
+                    .thenRun(() -> {
+                        if (config.stickySessions()) {
+                            this.sessionLocked = true;
+                        }
+                    })
                     .exceptionally(throwable -> {
                         LOG.error("Error occurred {}", throwable.getMessage());
                         return null;
@@ -407,8 +412,8 @@ public class UltiLauncher extends JFrame {
 
     private void onTableCellClicked(int row, int col, MouseButton mouseButton) {
         var accounts = accountService.getLoadedAccounts();
+        var valueAt = (boolean) tableModel.getValueAt(row, col);
         if (col == LOGIN_COLUMN) {
-            var valueAt = (boolean) tableModel.getValueAt(row, col);
             if (sessionLocked && !valueAt) {
                 JOptionPane.showMessageDialog(
                         this,
@@ -439,6 +444,9 @@ public class UltiLauncher extends JFrame {
                     endAccount(row, process, account, mouseButton);
                 }
             });
+        } else if (col == AUDIO_COLUMN) {
+            var account = accounts.get(row);
+            account.setAudio(valueAt);
         }
     }
 
@@ -464,7 +472,7 @@ public class UltiLauncher extends JFrame {
 
     private void loadAccountsIntoTable(List<Account> accounts) {
         for (var account : accounts) {
-            tableModel.addRow(new Object[] {account.wantLogin(), account.name(), false});
+            tableModel.addRow(new Object[] {account.wantLogin(), account.name(), false, account.audio()});
         }
     }
 }

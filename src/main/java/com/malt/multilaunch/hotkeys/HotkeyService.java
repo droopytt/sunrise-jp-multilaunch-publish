@@ -94,7 +94,7 @@ public interface HotkeyService {
                             return;
                         }
 
-                        if (activeAccountManager.accounts().isEmpty()) {
+                        if (activeAccountManager.activeAccounts().isEmpty()) {
                             return;
                         }
 

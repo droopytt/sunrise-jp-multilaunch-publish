@@ -12,6 +12,7 @@ public class Account {
 
     private String name;
     private String username;
+    private boolean audio;
 
     @ToStringExclude
     private String password;
@@ -23,15 +24,17 @@ public class Account {
             @JsonProperty("name") String name,
             @JsonProperty("username") String username,
             @JsonProperty("password") String password,
-            @JsonProperty("wantLogin") boolean wantLogin) {
+            @JsonProperty("wantLogin") boolean wantLogin,
+            @JsonProperty("audio") boolean audio) {
         this.name = StringUtils.isBlank(name) ? username : name;
         this.username = username;
         this.password = password;
         this.wantLogin = wantLogin;
+        this.audio = audio;
     }
 
     public Account(String username, String password) {
-        this(username, username, password, false);
+        this(username, username, password, false, true);
     }
 
     @JsonGetter
@@ -68,6 +71,15 @@ public class Account {
 
     public void setWantLogin(boolean wantLogin) {
         this.wantLogin = wantLogin;
+    }
+
+    public void setAudio(boolean audio) {
+        this.audio = audio;
+    }
+
+    @JsonGetter
+    public boolean audio() {
+        return audio;
     }
 
     @Override

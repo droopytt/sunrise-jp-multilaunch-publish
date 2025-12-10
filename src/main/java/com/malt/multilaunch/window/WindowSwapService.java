@@ -77,7 +77,7 @@ public class WindowSwapService {
 
     private void handleAltClick(int x, int y) {
         Account selectedAccount = null;
-        for (var account : activeAccountManager.accounts()) {
+        for (var account : activeAccountManager.activeAccounts()) {
             var maybeRectangle = activeAccountManager.findWindowRect(account);
             var maybeProcess = activeAccountManager.findProcessForAccount(account);
             if (maybeRectangle.isPresent() && maybeProcess.isPresent()) {

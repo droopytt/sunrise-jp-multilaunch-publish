@@ -4,6 +4,7 @@ import static java.util.Collections.synchronizedSet;
 
 import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.ffm.ProcessAffinityUtils;
+import com.malt.multilaunch.ffm.ProcessVolumeMuter;
 import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
@@ -60,7 +61,22 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
 
                     CompletableFuture.runAsync(
                             () -> windowService.assignControllerToWindows(processes, multiControllerService));
+
+                    CompletableFuture.runAsync(() -> setVolumeForAccounts(activeAccountManager));
                 });
+    }
+
+    private void setVolumeForAccounts(ActiveAccountManager activeAccountManager) {
+        activeAccountManager.activeAccounts().stream()
+                .filter(account -> !account.audio())
+                .peek(account -> LOG.debug("Muting process for account {}", account))
+                .map(activeAccountManager::findProcessForAccount)
+                .flatMap(Optional::stream)
+                .forEach(this::adjustVolume);
+    }
+
+    private void adjustVolume(Process process) {
+        ProcessVolumeMuter.muteProcess(process.pid());
     }
 
     @Override

@@ -41,7 +41,7 @@ public class ActiveAccountManager {
         return activeSession.contains(account);
     }
 
-    public Set<Account> accounts() {
+    public Set<Account> activeAccounts() {
         return activeProcesses.keySet();
     }
 
