@@ -363,6 +363,9 @@ public class UltiLauncher extends JFrame {
         if (dialog.isSaved()) {
             configService.saveConfigToFile(config);
         }
+        if(!config.stickySessions()) {
+            sessionLocked = false;
+        }
     }
 
     private void onEndAllClicked(MouseButton mouseButton) {
@@ -407,8 +410,10 @@ public class UltiLauncher extends JFrame {
         var accounts = accountService.getLoadedAccounts();
         if (col == LOGIN_COLUMN) {
             var valueAt = (boolean) tableModel.getValueAt(row, col);
-            if(sessionLocked && !valueAt) {
-                JOptionPane.showMessageDialog(this, "Currently in a sticky session, please end all accounts before marking any accounts to log in");
+            if (sessionLocked && !valueAt) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Currently in a sticky session, please end all accounts before marking any accounts to log in");
                 tableModel.setValueAt(false, row, col);
                 return;
             }

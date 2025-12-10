@@ -1,11 +1,11 @@
 package com.malt.multilaunch.ui;
 
+import static java.util.Collections.unmodifiableSet;
+
 import com.malt.multilaunch.model.Account;
 import java.awt.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.Collections.unmodifiableSet;
 
 public class ActiveAccountManager {
     private final Map<Account, Process> activeProcesses;
