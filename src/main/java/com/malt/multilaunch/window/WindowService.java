@@ -193,7 +193,27 @@ public interface WindowService {
                 offset = 16;
             }
 
-            var rectangles = createTargetWindowRects(workingArea, accounts.size(), offset);
+            List<Rectangle> rectangles;
+            if (config.stickySessions()) {
+                var sessionAccounts = new ArrayList<>(activeAccountManager.activeSession());
+                rectangles = createTargetWindowRects(workingArea, sessionAccounts.size(), offset);
+
+                var accountRectangles = new ArrayList<Rectangle>();
+                for (var account : accounts) {
+                    var existingRect = activeAccountManager.findWindowRect(account);
+                    if (existingRect.isPresent()) {
+                        accountRectangles.add(existingRect.get());
+                    } else {
+                        int sessionIndex = sessionAccounts.indexOf(account);
+                        if (sessionIndex >= 0 && sessionIndex < rectangles.size()) {
+                            accountRectangles.add(rectangles.get(sessionIndex));
+                        }
+                    }
+                }
+                rectangles = accountRectangles;
+            } else {
+                rectangles = createTargetWindowRects(workingArea, accounts.size(), offset);
+            }
 
             resizeWindowsWithRectangles(accounts, activeAccountManager, rectangles, config);
         }

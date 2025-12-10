@@ -10,7 +10,10 @@ import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.window.WindowSwapService;
 import com.malt.multilaunch.window.WindowUtils;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -203,11 +206,17 @@ public class UltiLauncher extends JFrame {
                     if (renderer instanceof JCheckBox checkBox) {
                         checkBox.setOpaque(true);
                         var targetAccount = accountService.getLoadedAccounts().get(row);
-                        var offlineColor = config.stickySessions()
-                                        && activeAccountManager.accounts().contains(targetAccount)
-                                ? STICKY_SESSIONS_OFFLINE_COLOR
-                                : Color.RED;
-                        checkBox.setBackground(Boolean.TRUE.equals(value) ? GREEN : offlineColor);
+
+                        Color backgroundColor;
+                        if (Boolean.TRUE.equals(value)) {
+                            backgroundColor = GREEN;
+                        } else if (config.stickySessions() && activeAccountManager.isInSession(targetAccount)) {
+                            backgroundColor = STICKY_SESSIONS_OFFLINE_COLOR;
+                        } else {
+                            backgroundColor = Color.RED;
+                        }
+
+                        checkBox.setBackground(backgroundColor);
                         checkBox.setSelected(false);
                     }
                     return renderer;
@@ -356,6 +365,17 @@ public class UltiLauncher extends JFrame {
 
     private void onEndAllClicked(MouseButton mouseButton) {
         var accounts = accountService.getLoadedAccounts();
+
+        boolean endSessions = false;
+        if (config.stickySessions() && !activeAccountManager.activeSession().isEmpty()) {
+            int result = JOptionPane.showConfirmDialog(
+                    this,
+                    "End all sticky sessions? (No will keep window positions for relaunch)",
+                    "End Sessions",
+                    JOptionPane.YES_NO_OPTION);
+            endSessions = (result == JOptionPane.YES_OPTION);
+        }
+
         for (int i = 0; i < accounts.size(); i++) {
             tableModel.setValueAt(false, i, END_COLUMN);
             var account = accounts.get(i);
@@ -363,8 +383,15 @@ public class UltiLauncher extends JFrame {
             activeAccountManager
                     .findProcessForAccount(account)
                     .ifPresent(process -> endAccount(finalI, process, account, mouseButton));
+
+            if (endSessions) {
+                activeAccountManager.endSession(account);
+            }
         }
-        activeAccountManager.clear();
+
+        if (endSessions) {
+            activeAccountManager.clear();
+        }
     }
 
     private void onUntickAllClicked() {
@@ -394,6 +421,7 @@ public class UltiLauncher extends JFrame {
             }
         } else if (col == END_COLUMN) {
             var account = accounts.get(row);
+
             activeAccountManager.findProcessForAccount(account).ifPresent(process -> {
                 if (process.isAlive()) {
                     endAccount(row, process, account, mouseButton);
@@ -403,9 +431,8 @@ public class UltiLauncher extends JFrame {
     }
 
     private void endAccount(int row, Process process, Account account, MouseButton mouseButton) {
-        if (mouseButton == com.malt.multilaunch.ui.MouseButton.LEFT
-                || mouseButton == com.malt.multilaunch.ui.MouseButton.RIGHT) {
-            if (mouseButton == com.malt.multilaunch.ui.MouseButton.LEFT) {
+        if (mouseButton == MouseButton.LEFT || mouseButton == MouseButton.RIGHT) {
+            if (mouseButton == MouseButton.LEFT) {
                 process.destroy();
             } else {
                 WindowUtils.sendCloseSignal(process);
@@ -416,6 +443,8 @@ public class UltiLauncher extends JFrame {
 
     private void deregisterAccount(int row, Account account) {
         if (!config.stickySessions()) {
+            activeAccountManager.endSession(account);
+        } else {
             activeAccountManager.removeAccount(account);
         }
         tableModel.setValueAt(false, row, END_COLUMN);
