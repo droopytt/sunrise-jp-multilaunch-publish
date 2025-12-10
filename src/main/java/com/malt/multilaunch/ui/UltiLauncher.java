@@ -190,8 +190,9 @@ public class UltiLauncher extends JFrame {
         accountTable.getColumnModel().getColumn(LOGIN_COLUMN).setPreferredWidth(75);
         accountTable.getColumnModel().getColumn(LOGIN_COLUMN).setMaxWidth(75);
 
+        accountTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        accountTable.getColumnModel().getColumn(TOON_COLUMN).setMinWidth(10);
         accountTable.getColumnModel().getColumn(TOON_COLUMN).setPreferredWidth(150);
-        accountTable.getColumnModel().getColumn(TOON_COLUMN).setMaxWidth(150);
 
         UIManager.put("CheckBox.font", new Font("SansSerif", Font.PLAIN, 16));
         SwingUtilities.updateComponentTreeUI(this);
