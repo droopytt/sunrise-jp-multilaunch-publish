@@ -187,8 +187,6 @@ public class UltiLauncher extends JFrame {
 
         accountTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         setupCheckboxColumn(accountTable, LOGIN_COLUMN);
-        accountTable.getColumnModel().getColumn(LOGIN_COLUMN).setPreferredWidth(75);
-        accountTable.getColumnModel().getColumn(LOGIN_COLUMN).setMaxWidth(75);
 
         accountTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         accountTable.getColumnModel().getColumn(TOON_COLUMN).setMinWidth(10);
@@ -238,9 +236,9 @@ public class UltiLauncher extends JFrame {
     }
 
     private static void setupCheckboxColumn(JTable accountTable, int column) {
-        accountTable.getColumnModel().getColumn(column).setMinWidth(40);
-        accountTable.getColumnModel().getColumn(column).setPreferredWidth(50);
-        accountTable.getColumnModel().getColumn(column).setMaxWidth(55);
+        accountTable.getColumnModel().getColumn(column).setMinWidth(70);
+        accountTable.getColumnModel().getColumn(column).setPreferredWidth(70);
+        accountTable.getColumnModel().getColumn(column).setMaxWidth(90);
     }
 
     private void setupListeners() {
