@@ -13,6 +13,7 @@ public class Config {
     private boolean swapMultiControllerAssignmentsOnWindowSwap;
     private int startingCore;
     private boolean stickySessions;
+    private int volumePercentage;
     private Path sunriseWorkingDir;
 
     public Config(
@@ -21,11 +22,13 @@ public class Config {
                     boolean swapMultiControllerAssignmentsOnWindowSwap,
             @JsonProperty("startingCore") int startingCore,
             @JsonProperty("stickySessions") boolean stickySessions,
+            @JsonProperty("volumePercentage") int volumePercentage,
             @JsonProperty("sunriseWorkingDir") Path sunriseWorkingDir) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
         this.stickySessions = stickySessions;
+        this.volumePercentage = volumePercentage;
         this.sunriseWorkingDir = sunriseWorkingDir == null ? defaultJapanPath() : sunriseWorkingDir;
     }
 
@@ -49,8 +52,18 @@ public class Config {
         return startingCore;
     }
 
+    @JsonGetter
+    public int volumePercentage() {
+        return volumePercentage;
+    }
+
     public void setStartingCore(int startingCore) {
         this.startingCore = startingCore;
+    }
+
+    @JsonSetter
+    public void setVolumePercentage(int volumePercentage) {
+        this.volumePercentage = volumePercentage;
     }
 
     @JsonSetter

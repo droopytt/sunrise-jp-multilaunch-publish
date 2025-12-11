@@ -62,21 +62,25 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
                     CompletableFuture.runAsync(() -> windowService.assignControllerToWindows(
                             config.stickySessions(), multiControllerService, activeAccountManager, processes));
 
-                    CompletableFuture.runAsync(() -> setVolumeForAccounts(activeAccountManager));
+                    CompletableFuture.runAsync(() -> setVolumeForAccounts(activeAccountManager, config));
                 });
     }
 
-    private void setVolumeForAccounts(ActiveAccountManager activeAccountManager) {
+    private void setVolumeForAccounts(ActiveAccountManager activeAccountManager, Config config) {
         activeAccountManager.activeAccounts().stream()
                 .filter(account -> !account.audio())
                 .peek(account -> LOG.debug("Muting process for account {}", account))
                 .map(activeAccountManager::findProcessForAccount)
                 .flatMap(Optional::stream)
-                .forEach(this::adjustVolume);
-    }
+                .forEach(process -> ProcessVolumeMuter.muteProcess(process.pid()));
 
-    private void adjustVolume(Process process) {
-        ProcessVolumeMuter.muteProcess(process.pid());
+        activeAccountManager.activeAccounts().stream()
+                .filter(Account::audio)
+                .peek(account -> LOG.debug("Enabling audio for account {}", account))
+                .map(activeAccountManager::findProcessForAccount)
+                .flatMap(Optional::stream)
+                .forEach(process ->
+                        ProcessVolumeMuter.setProcessVolume(process.pid(), config.volumePercentage() / 100f, false));
     }
 
     @Override

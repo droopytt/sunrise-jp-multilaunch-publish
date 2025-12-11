@@ -10,6 +10,7 @@ public class ConfigDialog extends JDialog {
     private JCheckBox moveControllerAssignmentsWithSwaps;
     private JCheckBox stickySessions;
     private JTextField startingCore;
+    private JSpinner volumePercentageSpinner;
     private JButton saveButton;
 
     private boolean saved = false;
@@ -22,7 +23,7 @@ public class ConfigDialog extends JDialog {
         populateFields();
         setupListeners();
 
-        setSize(340, 240);
+        pack();
         setLocationRelativeTo(parent);
         setResizable(false);
     }
@@ -66,6 +67,19 @@ public class ConfigDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.weightx = 0;
+        gbc.gridwidth = 1;
+        add(new JLabel("Volume % (of max volume) when audio enabled"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        SpinnerNumberModel model = new SpinnerNumberModel(0, 0, 100, 1);
+        volumePercentageSpinner = new JSpinner(model);
+        volumePercentageSpinner.setEditor(new JSpinner.NumberEditor(volumePercentageSpinner, "0"));
+        add(volumePercentageSpinner, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.weightx = 0;
         add(new JLabel("Starting core for affinity assignment (Requires restart):"), gbc);
 
         gbc.gridx = 1;
@@ -74,7 +88,7 @@ public class ConfigDialog extends JDialog {
         add(startingCore, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(15, 10, 10, 10);
         saveButton = new JButton("Save");
@@ -87,6 +101,7 @@ public class ConfigDialog extends JDialog {
         moveControllerAssignmentsWithSwaps.setSelected(config.swapMultiControllerAssignmentsOnWindowSwap());
         stickySessions.setSelected(config.stickySessions());
         startingCore.setText(Integer.toString(config.startingCore()));
+        volumePercentageSpinner.setValue(config.volumePercentage());
     }
 
     private void setupListeners() {
@@ -105,6 +120,8 @@ public class ConfigDialog extends JDialog {
                     this,
                     "Could not parse value for starting core %s. Value unchanged.".formatted(startingCore.getText()));
         }
+
+        config.setVolumePercentage((int) volumePercentageSpinner.getValue());
         saved = true;
         dispose();
     }
