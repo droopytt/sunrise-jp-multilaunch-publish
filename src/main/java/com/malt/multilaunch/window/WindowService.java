@@ -7,6 +7,7 @@ import com.malt.multilaunch.multicontroller.WindowAssignRequest;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -197,7 +198,7 @@ public interface WindowService {
 
             List<Rectangle> rectangles;
             if (config.stickySessions()) {
-                var sessionAccounts = new ArrayList<>(activeAccountManager.activeSession());
+                var sessionAccounts = new ArrayList<>(activeAccountManager.activeSession()).stream().sorted(Comparator.comparingInt(accounts::indexOf)).toList();
                 rectangles = createTargetWindowRects(workingArea, sessionAccounts.size(), offset);
 
                 var accountRectangles = new ArrayList<Rectangle>();
