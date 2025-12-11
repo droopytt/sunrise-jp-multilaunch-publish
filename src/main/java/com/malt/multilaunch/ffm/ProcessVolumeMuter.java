@@ -37,7 +37,7 @@ public class ProcessVolumeMuter {
     }
 
     public static boolean muteProcess(long processId) {
-        return setProcessVolume(processId, 0.0f, true);
+        return setProcessVolume(processId, 0.01f, true);
     }
 
     public static boolean setProcessVolume(long processId, float volume, boolean mute) {

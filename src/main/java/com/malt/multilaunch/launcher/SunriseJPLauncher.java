@@ -52,7 +52,7 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
                             .flatMap(Optional::stream)
                             .toList();
 
-                    awaitForLineInOutput(processes, "Using gameServer from launcher:");
+                    waitForLine(processes, "Using gameServer from launcher:");
                     return processes;
                 })
                 .thenAccept(processes -> {
@@ -93,7 +93,7 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
         return "py24.exe";
     }
 
-    private void awaitForLineInOutput(List<Process> processes, String targetLine) {
+    private void waitForLine(List<Process> processes, String targetLine) {
         var doneProcesses = synchronizedSet(new HashSet<Process>());
 
         for (var process : processes) {
