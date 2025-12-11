@@ -72,4 +72,13 @@ public class ActiveAccountManager {
         activeSession.clear();
         windowRects.clear();
     }
+
+    public Optional<Account> findAccountForProcess(Process process) {
+        for (var entry : activeProcesses.entrySet()) {
+            if (entry.getValue().equals(process)) {
+                return Optional.of(entry.getKey());
+            }
+        }
+        return Optional.empty();
+    }
 }

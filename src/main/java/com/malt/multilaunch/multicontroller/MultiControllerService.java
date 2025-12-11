@@ -1,6 +1,7 @@
 package com.malt.multilaunch.multicontroller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import java.io.IOException;
 import java.net.URI;
@@ -8,7 +9,9 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +20,9 @@ public interface MultiControllerService {
 
     void unassignAllToons();
 
-    void sendAssignRequestsToController(List<WindowAssignRequest> requests);
+    void sendAssignRequestsToController(HashMap<Account, WindowAssignRequest> requests);
+
+    Optional<WindowAssignRequest> lastAssignedForAccount(Account account);
 
     void setMode(ControllerMode mode, String substate);
 
@@ -26,14 +31,18 @@ public interface MultiControllerService {
         return new ConfigAwareMulticontrollerService(config, new DefaultMulticontrollerService());
     }
 
-    void swapHandles(long hwnd1, long hwnd2);
+    void swapHandles(Account acct1, long hwnd1, Account acct2, long hwnd2);
 
     class DefaultMulticontrollerService implements MultiControllerService {
         private static final Logger LOG = LoggerFactory.getLogger(DefaultMulticontrollerService.class);
         private static final String MULTICONTROLLER_BASE_ENDPOINT = "http://127.0.0.1:12525/";
         public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-        private DefaultMulticontrollerService() {}
+        private final Map<Account, WindowAssignRequest> lastRequests;
+
+        private DefaultMulticontrollerService() {
+            lastRequests = new HashMap<>();
+        }
 
         @Override
         public void unassignAllToons() {
@@ -50,7 +59,8 @@ public interface MultiControllerService {
         }
 
         @Override
-        public void sendAssignRequestsToController(List<WindowAssignRequest> requests) {
+        public void sendAssignRequestsToController(HashMap<Account, WindowAssignRequest> mappings) {
+            var requests = mappings.values();
             LOG.debug("Sending requests to controller {}", requests);
             try (var httpClient = HttpClient.newHttpClient()) {
                 var assign = new URI(MULTICONTROLLER_BASE_ENDPOINT + "assign");
@@ -60,16 +70,22 @@ public interface MultiControllerService {
                         .POST(HttpRequest.BodyPublishers.ofString(windowRequestsAsString))
                         .build();
                 httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                lastRequests.putAll(mappings);
             } catch (URISyntaxException | IOException | InterruptedException e) {
                 logError(e);
             }
         }
 
         @Override
+        public Optional<WindowAssignRequest> lastAssignedForAccount(Account account) {
+            return Optional.ofNullable(lastRequests.get(account));
+        }
+
+        @Override
         public void setMode(ControllerMode mode, String substate) {}
 
         @Override
-        public void swapHandles(long hwnd1, long hwnd2) {
+        public void swapHandles(Account acct1, long hwnd1, Account acct2, long hwnd2) {
             LOG.debug("Sending swap request to controller for hwnds {} and {}", hwnd1, hwnd2);
             try (var httpClient = HttpClient.newHttpClient()) {
                 var swapEndpoint = new URI(MULTICONTROLLER_BASE_ENDPOINT + "swap");
@@ -79,6 +95,12 @@ public interface MultiControllerService {
                         .build();
                 var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 LOG.debug("Got response for swap request {}", response.body());
+                if (response.statusCode() == 200) {
+                    var prevAssignAcct1 = lastRequests.get(acct1);
+                    var prevAssignAcct2 = lastRequests.get(acct2);
+                    lastRequests.put(acct1, prevAssignAcct2);
+                    lastRequests.put(acct2, prevAssignAcct1);
+                }
             } catch (URISyntaxException | IOException | InterruptedException e) {
                 logError(e);
             }

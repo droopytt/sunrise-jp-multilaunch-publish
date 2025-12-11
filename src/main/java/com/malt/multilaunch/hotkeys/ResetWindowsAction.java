@@ -48,7 +48,8 @@ public class ResetWindowsAction implements Runnable {
         try (var executor = Executors.newSingleThreadScheduledExecutor()) {
             multiControllerService.unassignAllToons();
             executor.schedule(
-                    () -> windowService.assignControllerToWindows(processes, multiControllerService),
+                    () -> windowService.assignControllerToWindows(
+                            false, multiControllerService, activeAccountManager, processes),
                     100,
                     TimeUnit.MILLISECONDS);
         }

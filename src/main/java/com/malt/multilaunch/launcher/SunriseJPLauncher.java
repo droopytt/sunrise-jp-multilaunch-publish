@@ -59,8 +59,8 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
                     CompletableFuture.runAsync(
                             () -> windowService.resizeWindowsForAccounts(accounts, activeAccountManager, config));
 
-                    CompletableFuture.runAsync(
-                            () -> windowService.assignControllerToWindows(processes, multiControllerService));
+                    CompletableFuture.runAsync(() -> windowService.assignControllerToWindows(
+                            config.stickySessions(), multiControllerService, activeAccountManager, processes));
 
                     CompletableFuture.runAsync(() -> setVolumeForAccounts(activeAccountManager));
                 });

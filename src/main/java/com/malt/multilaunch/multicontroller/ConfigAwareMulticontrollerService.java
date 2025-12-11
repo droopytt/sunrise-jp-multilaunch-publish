@@ -1,7 +1,9 @@
 package com.malt.multilaunch.multicontroller;
 
+import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Optional;
 
 public class ConfigAwareMulticontrollerService implements MultiControllerService {
 
@@ -21,10 +23,18 @@ public class ConfigAwareMulticontrollerService implements MultiControllerService
     }
 
     @Override
-    public void sendAssignRequestsToController(List<WindowAssignRequest> requests) {
+    public void sendAssignRequestsToController(HashMap<Account, WindowAssignRequest> requests) {
         if (config.enableMultiControllerIntegration()) {
             delegate.sendAssignRequestsToController(requests);
         }
+    }
+
+    @Override
+    public Optional<WindowAssignRequest> lastAssignedForAccount(Account account) {
+        if (config.enableMultiControllerIntegration()) {
+            return delegate.lastAssignedForAccount(account);
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -35,9 +45,9 @@ public class ConfigAwareMulticontrollerService implements MultiControllerService
     }
 
     @Override
-    public void swapHandles(long hwnd1, long hwnd2) {
+    public void swapHandles(Account acct1, long hwnd1, Account acct2, long hwnd2) {
         if (config.enableMultiControllerIntegration() && config.swapMultiControllerAssignmentsOnWindowSwap()) {
-            delegate.swapHandles(hwnd1, hwnd2);
+            delegate.swapHandles(acct1, hwnd1, acct2, hwnd2);
         }
     }
 }

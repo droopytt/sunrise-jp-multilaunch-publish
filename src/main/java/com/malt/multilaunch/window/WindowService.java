@@ -6,10 +6,8 @@ import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.multicontroller.WindowAssignRequest;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +33,11 @@ public interface WindowService {
     void resizeWindowsWithRectangles(
             List<Account> openAccounts, ActiveAccountManager activeAccountManager, List<Rectangle> list, Config config);
 
-    void assignControllerToWindows(List<Process> processes, MultiControllerService multiControllerService);
+    void assignControllerToWindows(
+            boolean stickySessions,
+            MultiControllerService multiControllerService,
+            ActiveAccountManager activeAccountManager,
+            List<Process> processes);
 
     class DefaultWindowService implements WindowService {
 
@@ -198,7 +200,10 @@ public interface WindowService {
 
             List<Rectangle> rectangles;
             if (config.stickySessions()) {
-                var sessionAccounts = new ArrayList<>(activeAccountManager.activeSession()).stream().sorted(Comparator.comparingInt(accounts::indexOf)).toList();
+                var sessionAccounts = new ArrayList<>(activeAccountManager.activeSession())
+                        .stream()
+                                .sorted(Comparator.comparingInt(accounts::indexOf))
+                                .toList();
                 rectangles = createTargetWindowRects(workingArea, sessionAccounts.size(), offset);
 
                 var accountRectangles = new ArrayList<Rectangle>();
@@ -232,10 +237,13 @@ public interface WindowService {
         }
 
         @Override
-        // TODO return the assigned windows
-        public void assignControllerToWindows(List<Process> processes, MultiControllerService multiControllerService) {
+        public void assignControllerToWindows(
+                boolean stickySessions,
+                MultiControllerService multiControllerService,
+                ActiveAccountManager activeAccountManager,
+                List<Process> processes) {
             var toonNumber = 1;
-            var requests = new ArrayList<WindowAssignRequest>();
+            var requests = new HashMap<Account, WindowAssignRequest>();
 
             for (var process : processes) {
                 var hWnd = WindowUtils.getWindowHandleForProcessId(process.pid());
@@ -247,7 +255,28 @@ public interface WindowService {
                 var pairDirection = toonNumber % 2 == 0
                         ? WindowAssignRequest.PairDirection.RIGHT
                         : WindowAssignRequest.PairDirection.LEFT;
-                requests.add(new WindowAssignRequest(groupNumber, hWnd, pairDirection));
+                var account =
+                        activeAccountManager.findAccountForProcess(process).orElseThrow();
+                WindowAssignRequest request;
+                var originalRequest = new WindowAssignRequest(groupNumber, hWnd, pairDirection);
+                if (stickySessions) {
+                    request = multiControllerService
+                            .lastAssignedForAccount(account)
+                            .map(windowAssignRequest -> new WindowAssignRequest(
+                                    windowAssignRequest.groupNumber(),
+                                    hWnd,
+                                    WindowAssignRequest.PairDirection.fromIntValue(
+                                            windowAssignRequest.pairDirection())))
+                            .orElse(originalRequest);
+                    LOG.debug(
+                            "Sticky sessions for account {} on - assigned request was {} and original request is {}",
+                            account,
+                            request,
+                            originalRequest);
+                } else {
+                    request = originalRequest;
+                }
+                requests.put(account, request);
                 toonNumber++;
             }
 

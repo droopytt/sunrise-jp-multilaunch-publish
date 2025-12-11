@@ -138,7 +138,7 @@ public class WindowSwapService {
         activeAccountManager.putWindow(acct1, rect2);
         activeAccountManager.putWindow(acct2, rect1);
 
-        multiControllerService.swapHandles(hwnd1, hwnd2);
+        multiControllerService.swapHandles(acct1, hwnd1, acct2, hwnd2);
 
         LOG.debug("Swapped windows {}:{} and {}:{}", acct1, hwnd1, acct2, hwnd2);
     }
