@@ -38,6 +38,6 @@ public class SnapWindowsAction implements Runnable {
                         .map(activeAccountManager::findWindowRect)
                         .flatMap(Optional::stream)
                         .toList(),
-                config);
+                config.stickySessions());
     }
 }

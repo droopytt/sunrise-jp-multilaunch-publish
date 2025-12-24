@@ -1,7 +1,6 @@
 package com.malt.multilaunch.window;
 
 import com.malt.multilaunch.model.Account;
-import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.multicontroller.WindowAssignRequest;
 import com.malt.multilaunch.ui.ActiveAccountManager;
@@ -28,10 +27,14 @@ public interface WindowService {
 
     List<Rectangle> groupIntoFours(int numWindows, List<Rectangle> windowRects);
 
-    void resizeWindowsForAccounts(List<Account> accounts, ActiveAccountManager activeAccountManager, Config config);
+    void resizeWindowsForAccounts(
+            List<Account> accounts, ActiveAccountManager activeAccountManager, boolean stickySessions);
 
     void resizeWindowsWithRectangles(
-            List<Account> openAccounts, ActiveAccountManager activeAccountManager, List<Rectangle> list, Config config);
+            List<Account> openAccounts,
+            ActiveAccountManager activeAccountManager,
+            List<Rectangle> list,
+            boolean stickySessions);
 
     void assignControllerToWindows(
             boolean stickySessions,
@@ -40,37 +43,6 @@ public interface WindowService {
             List<Process> processes);
 
     class DefaultWindowService implements WindowService {
-
-        private static void resize(
-                List<Account> accounts,
-                ActiveAccountManager activeAccountManager,
-                List<Rectangle> rectangles,
-                Config config) {
-            if (accounts.size() < 2 && !config.stickySessions()) {
-                return;
-            }
-            if (rectangles.size() < accounts.size()) {
-                LOG.warn(
-                        "Had {} rectangles but {} accounts than processes to resize, returning.",
-                        rectangles.size(),
-                        accounts.size());
-            } else {
-                for (int i = 0; i < accounts.size(); i++) {
-                    var account = accounts.get(i);
-                    var next = config.stickySessions()
-                            ? activeAccountManager.findWindowRect(account).orElse(rectangles.get(i))
-                            : rectangles.get(i);
-                    CompletableFuture.runAsync(() -> {
-                        var process = activeAccountManager
-                                .findProcessForAccount(account)
-                                .orElseThrow();
-                        var hwnd = WindowUtils.getWindowHandleForProcessId((int) process.pid());
-                        WindowUtils.resize(hwnd, next.x, next.y, next.width, next.height);
-                        activeAccountManager.putWindow(account, next);
-                    });
-                }
-            }
-        }
 
         private Dimension getOffsets(Process process) {
             var hwnd = WindowUtils.getWindowHandleForProcessId(process.pid());
@@ -165,7 +137,7 @@ public interface WindowService {
 
         @Override
         public void resizeWindowsForAccounts(
-                List<Account> accounts, ActiveAccountManager activeAccountManager, Config config) {
+                List<Account> accounts, ActiveAccountManager activeAccountManager, boolean stickySessions) {
             var physicalSize = DPIUtils.getPhysicalScreenSize();
 
             double scalingFactor = DPIUtils.getPrimaryMonitorScalingFactor();
@@ -199,7 +171,7 @@ public interface WindowService {
             }
 
             List<Rectangle> rectangles;
-            if (config.stickySessions()) {
+            if (stickySessions) {
                 var sessionAccounts = new ArrayList<>(activeAccountManager.activeSession())
                         .stream()
                                 .sorted(Comparator.comparingInt(accounts::indexOf))
@@ -224,7 +196,7 @@ public interface WindowService {
                 rectangles = createTargetWindowRects(workingArea, accounts.size(), offset);
             }
 
-            resizeWindowsWithRectangles(accounts, activeAccountManager, rectangles, config);
+            resizeWindowsWithRectangles(accounts, activeAccountManager, rectangles, stickySessions);
         }
 
         @Override
@@ -232,8 +204,31 @@ public interface WindowService {
                 List<Account> accounts,
                 ActiveAccountManager activeAccountManager,
                 List<Rectangle> rectangles,
-                Config config) {
-            resize(accounts, activeAccountManager, rectangles, config);
+                boolean stickySessions) {
+            if (accounts.size() < 2 && !stickySessions) {
+                return;
+            }
+            if (rectangles.size() < accounts.size()) {
+                LOG.warn(
+                        "Had {} rectangles but {} accounts than processes to resize, returning.",
+                        rectangles.size(),
+                        accounts.size());
+            } else {
+                for (int i = 0; i < accounts.size(); i++) {
+                    var account = accounts.get(i);
+                    var next = stickySessions
+                            ? activeAccountManager.findWindowRect(account).orElse(rectangles.get(i))
+                            : rectangles.get(i);
+                    CompletableFuture.runAsync(() -> {
+                        var process = activeAccountManager
+                                .findProcessForAccount(account)
+                                .orElseThrow();
+                        var hwnd = WindowUtils.getWindowHandleForProcessId((int) process.pid());
+                        WindowUtils.resize(hwnd, next.x, next.y, next.width, next.height);
+                        activeAccountManager.putWindow(account, next);
+                    });
+                }
+            }
         }
 
         @Override

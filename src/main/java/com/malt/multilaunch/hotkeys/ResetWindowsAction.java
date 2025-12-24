@@ -40,7 +40,7 @@ public class ResetWindowsAction implements Runnable {
                 .map(activeAccountManager::findProcessForAccount)
                 .flatMap(Optional::stream)
                 .toList();
-        windowService.resizeWindowsForAccounts(openAccounts, activeAccountManager, config);
+        windowService.resizeWindowsForAccounts(openAccounts, activeAccountManager, false);
         reassignControllersForProcesses(processes);
     }
 
