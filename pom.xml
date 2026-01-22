@@ -6,7 +6,7 @@
 
     <groupId>com.malt</groupId>
     <artifactId>sunrise-jp-multilaunch</artifactId>
-    <version>2025.12.2</version>
+    <version>2026.1.0</version>
 
     <properties>
         <maven.compiler.source>25</maven.compiler.source>
