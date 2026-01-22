@@ -36,7 +36,7 @@ public interface ConfigService {
             if (!Files.exists(configPath)) {
                 try {
                     configPath.toFile().createNewFile();
-                    var value = new Config(true, false, 1, false, 5, Config.defaultJapanPath());
+                    var value = new Config(true, false, 1, false, 100, Config.defaultJapanPath());
                     OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), value);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
