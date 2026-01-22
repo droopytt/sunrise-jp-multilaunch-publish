@@ -15,6 +15,7 @@ import com.malt.multilaunch.window.WindowService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -37,7 +38,7 @@ public class SunriseJPLauncher extends Launcher<JpApiResponse> {
 
     @Override
     public Map<String, String> getEnvironmentVariables(JpApiResponse response) {
-        var map = new HashMap<String, String>(2);
+        var map = new HashMap<String, String>(3);
         map.put("GAME_SERVER", "unite.sunrise.games:6667");
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
         map.put("PLAY_TOKEN", response.cookie());
@@ -92,6 +93,11 @@ public class SunriseJPLauncher extends Launcher<JpApiResponse> {
     @Override
     public String executableName() {
         return jpExecutableName();
+    }
+
+    @Override
+    public Path workingDir() {
+        return config.jpWorkingDir();
     }
 
     public static String jpExecutableName() {

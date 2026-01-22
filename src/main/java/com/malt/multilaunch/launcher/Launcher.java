@@ -16,7 +16,7 @@ public abstract class Launcher<T extends APIResponse> {
     protected final MultiControllerService multiControllerService;
     protected final WindowService windowService;
     private final GameLoginClient<T> gameLoginClient;
-    private final Config config;
+    protected final Config config;
 
     public Launcher(
             Config config,
@@ -59,9 +59,7 @@ public abstract class Launcher<T extends APIResponse> {
 
     public abstract String executableName();
 
-    public Path workingDir() {
-        return config.jpWorkingDir();
-    }
+    public abstract Path workingDir();
 
     public abstract void onProcessEnd(Process process);
 

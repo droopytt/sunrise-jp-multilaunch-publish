@@ -15,6 +15,7 @@ public class Config {
     private boolean stickySessions;
     private int volumePercentage;
     private Path jpWorkingDir;
+    private Path sunrise2004WorkingDir;
 
     public Config(
             @JsonProperty("enableMultiControllerIntegration") boolean enableMultiControllerIntegration,
@@ -23,13 +24,15 @@ public class Config {
             @JsonProperty("startingCore") int startingCore,
             @JsonProperty("stickySessions") boolean stickySessions,
             @JsonProperty("volumePercentage") int volumePercentage,
-            @JsonProperty("sunriseWorkingDir") Path jpWorkingDir) {
+            @JsonProperty("sunriseJpWorkingDir") Path jpWorkingDir,
+            @JsonProperty("sunrise2004WorkingDir") Path sunrise2004WorkingDir) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
         this.stickySessions = stickySessions;
         this.volumePercentage = volumePercentage;
         this.jpWorkingDir = jpWorkingDir == null ? defaultJapanPath() : jpWorkingDir;
+        this.sunrise2004WorkingDir = sunrise2004WorkingDir == null ? defaultSunrise2004Path() : jpWorkingDir;
     }
 
     @JsonGetter
@@ -89,6 +92,21 @@ public class Config {
     @JsonSetter
     public void setJpWorkingDir(Path jpWorkingDir) {
         this.jpWorkingDir = jpWorkingDir;
+    }
+
+    @JsonGetter
+    public Path sunrise2004WorkingDir() {
+        return sunrise2004WorkingDir;
+    }
+
+    @JsonSetter
+    public void setSunrise2004WorkingDir(Path sunrise2004WorkingDir) {
+        this.sunrise2004WorkingDir = sunrise2004WorkingDir;
+    }
+
+    public static Path defaultSunrise2004Path() {
+        var appData = System.getenv("LOCALAPPDATA");
+        return Paths.get(appData, "SunriseGames", "Test Toontown 2004 (sv1.0.10.6.test)");
     }
 
     public static Path defaultJapanPath() {

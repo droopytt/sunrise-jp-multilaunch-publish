@@ -427,8 +427,8 @@ public class UltiLauncher extends JFrame {
 
     private void onTableCellClicked(int row, int col, MouseButton mouseButton) {
         var accounts = accountService.getLoadedAccounts();
-        var valueAt = (boolean) tableModel.getValueAt(row, col);
         if (col == LOGIN_COLUMN) {
+            var valueAt = (boolean) tableModel.getValueAt(row, col);
             if (sessionLocked && !valueAt) {
                 JOptionPane.showMessageDialog(
                         this,
@@ -460,6 +460,7 @@ public class UltiLauncher extends JFrame {
                 }
             });
         } else if (col == AUDIO_COLUMN) {
+            var valueAt = (boolean) tableModel.getValueAt(row, col);
             var account = accounts.get(row);
             account.setAudio(valueAt);
         }
