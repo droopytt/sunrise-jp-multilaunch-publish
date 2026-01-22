@@ -41,10 +41,10 @@ public class Sunrise2004Launcher extends Launcher<JpApiResponse> {
 
     @Override
     public Map<String, String> getEnvironmentVariables(JpApiResponse response) {
-        var map = new HashMap<String, String>(3);
-        map.put("GAME_SERVER", "unite.sunrise.games:6667");
+        var map = new HashMap<String, String>(2);
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
-        map.put("PLAY_TOKEN", response.cookie());
+        map.put("TOONTOWN_PLAYTOKEN", response.cookie());
+        map.put("GAME2_DONE", "1");
         return map;
     }
 
@@ -90,7 +90,7 @@ public class Sunrise2004Launcher extends Launcher<JpApiResponse> {
 
     @Override
     public List<String> processArgs() {
-        return List.of("Start.py");
+        return List.of("Start.py", "0", "test.toontown.sv10106.sunrise.games:6667", "unite.sunrise.games:4500", "1");
     }
 
     @Override
