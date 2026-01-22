@@ -64,4 +64,6 @@ public abstract class Launcher<T extends APIResponse> {
     }
 
     public abstract void onProcessEnd(Process process);
+
+    public abstract String canonicalName();
 }

@@ -7,6 +7,7 @@ import com.malt.multilaunch.login.AccountService;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
+import com.malt.multilaunch.servers.Server;
 import com.malt.multilaunch.window.WindowSwapService;
 import com.malt.multilaunch.window.WindowUtils;
 import java.awt.*;
@@ -43,7 +44,6 @@ public class UltiLauncher extends JFrame {
     private JButton playButton;
     private JMenuBar menuBar;
     private JMenu serverMenu;
-    private JMenuItem sunriseJpMenuItem;
     private JMenuItem optionsMenuItem;
     private JMenuItem endAllMenuItem;
     private JMenuItem untickAllMenuItem;
@@ -137,8 +137,24 @@ public class UltiLauncher extends JFrame {
         menuBar = new JMenuBar();
 
         serverMenu = new JMenu("Server");
-        sunriseJpMenuItem = new JCheckBoxMenuItem("Sunrise JP", true);
-        serverMenu.add(sunriseJpMenuItem);
+
+        var servers = List.of(
+                new JCheckBoxMenuItem(Server.SUNRISE_JP.canonicalName(), true),
+                new JCheckBoxMenuItem(Server.SUNRISE_2004.canonicalName(), true));
+
+        servers.stream()
+                .peek(server -> server.setSelected(false))
+                .peek(serverMenu::add)
+                .forEach(item -> item.addActionListener(e -> {
+                    for (var server : servers) {
+                        if (!server.equals(item)) {
+                            server.setSelected(false);
+                        }
+                        item.setSelected(true);
+                    }
+                    LOG.debug("Selected item {}", item.getText());
+                }));
+
         menuBar.add(serverMenu);
 
         optionsMenuItem = new JMenuItem("Options");
@@ -244,8 +260,6 @@ public class UltiLauncher extends JFrame {
 
     private void setupListeners() {
         playButton.addActionListener(e -> onPlayButtonClicked());
-
-        sunriseJpMenuItem.addActionListener(e -> sunriseJpSelected());
 
         optionsMenuItem.addActionListener(e -> onOptionsClicked());
 
@@ -354,12 +368,6 @@ public class UltiLauncher extends JFrame {
         });
     }
 
-    private void sunriseJpSelected() {
-        LOG.info("Sunrise JP server selected");
-        sunriseJpMenuItem.setSelected(true);
-        // TODO: Switch to Sunrise JP server
-    }
-
     private void onOptionsClicked() {
         var dialog = new ConfigDialog(this, config);
         dialog.setVisible(true);
@@ -451,8 +459,9 @@ public class UltiLauncher extends JFrame {
     }
 
     private void endAccount(int row, Process process, Account account, MouseButton mouseButton) {
-        if (mouseButton == MouseButton.LEFT || mouseButton == MouseButton.RIGHT) {
-            if (mouseButton == MouseButton.LEFT) {
+        if (mouseButton == com.malt.multilaunch.ui.MouseButton.LEFT
+                || mouseButton == com.malt.multilaunch.ui.MouseButton.RIGHT) {
+            if (mouseButton == com.malt.multilaunch.ui.MouseButton.LEFT) {
                 process.destroy();
             } else {
                 WindowUtils.sendCloseSignal(process);

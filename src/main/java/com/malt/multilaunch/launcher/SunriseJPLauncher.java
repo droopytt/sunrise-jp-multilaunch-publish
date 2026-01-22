@@ -9,6 +9,7 @@ import com.malt.multilaunch.login.JpApiResponse;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
+import com.malt.multilaunch.servers.Server;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import com.malt.multilaunch.window.WindowService;
 import java.io.BufferedReader;
@@ -178,5 +179,10 @@ public class SunriseJPLauncher extends Launcher<JpApiResponse> {
     @Override
     public void onProcessEnd(Process process) {
         coreAssigner.removeAssignedCore(process.pid());
+    }
+
+    @Override
+    public String canonicalName() {
+        return Server.SUNRISE_JP.canonicalName();
     }
 }
