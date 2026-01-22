@@ -9,13 +9,13 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JpApiResponse implements APIResponse {
+public class SunriseApiResponse implements APIResponse {
     private final boolean success;
     private final int errorCode;
     private final String token;
 
     @JsonCreator
-    public JpApiResponse(
+    public SunriseApiResponse(
             @JsonProperty("success") boolean success,
             @JsonProperty("errorCode") int errorCode,
             @JsonProperty("token") String token) {

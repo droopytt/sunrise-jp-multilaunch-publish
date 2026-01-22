@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.malt.multilaunch.servers.Server;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -16,6 +17,7 @@ public class Config {
     private int volumePercentage;
     private Path jpWorkingDir;
     private Path sunrise2004WorkingDir;
+    private String lastSelectedServer;
 
     public Config(
             @JsonProperty("enableMultiControllerIntegration") boolean enableMultiControllerIntegration,
@@ -24,6 +26,7 @@ public class Config {
             @JsonProperty("startingCore") int startingCore,
             @JsonProperty("stickySessions") boolean stickySessions,
             @JsonProperty("volumePercentage") int volumePercentage,
+            @JsonProperty("lastSelectedServer") String lastSelectedServer,
             @JsonProperty("sunriseJpWorkingDir") Path jpWorkingDir,
             @JsonProperty("sunrise2004WorkingDir") Path sunrise2004WorkingDir) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
@@ -31,8 +34,9 @@ public class Config {
         this.startingCore = startingCore;
         this.stickySessions = stickySessions;
         this.volumePercentage = volumePercentage;
+        this.lastSelectedServer = lastSelectedServer == null ? Server.SUNRISE_JP.canonicalName() : lastSelectedServer;
         this.jpWorkingDir = jpWorkingDir == null ? defaultJapanPath() : jpWorkingDir;
-        this.sunrise2004WorkingDir = sunrise2004WorkingDir == null ? defaultSunrise2004Path() : jpWorkingDir;
+        this.sunrise2004WorkingDir = sunrise2004WorkingDir == null ? defaultSunrise2004Path() : sunrise2004WorkingDir;
     }
 
     @JsonGetter
@@ -102,6 +106,16 @@ public class Config {
     @JsonSetter
     public void setSunrise2004WorkingDir(Path sunrise2004WorkingDir) {
         this.sunrise2004WorkingDir = sunrise2004WorkingDir;
+    }
+
+    @JsonSetter
+    public void setLastSelectedServer(String lastSelectedServer) {
+        this.lastSelectedServer = lastSelectedServer;
+    }
+
+    @JsonGetter
+    public String lastSelectedServer() {
+        return lastSelectedServer;
     }
 
     public static Path defaultSunrise2004Path() {

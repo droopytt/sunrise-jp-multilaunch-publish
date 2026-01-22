@@ -1,38 +1,30 @@
-package com.malt.multilaunch.launchers;
+package com.malt.multilaunch.launcher.launchers;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import static java.util.stream.Collectors.joining;
+
+import com.google.inject.*;
 import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.hotkeys.HotkeyService;
 import com.malt.multilaunch.hotkeys.ResetWindowsAction;
 import com.malt.multilaunch.hotkeys.SnapWindowsAction;
-import com.malt.multilaunch.launcher.*;
+import com.malt.multilaunch.launcher.GameLoginClient;
+import com.malt.multilaunch.launcher.JpGameLoginClient;
+import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.login.AccountService;
-import com.malt.multilaunch.login.JpApiResponse;
+import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
-import com.malt.multilaunch.ui.ConfigService;
 import com.malt.multilaunch.window.WindowService;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import org.jnativehook.keyboard.NativeKeyEvent;
 
-public class Sunrise2004UltiLauncherModule extends AbstractModule {
-
-    @Provides
-    @Singleton
-    public ConfigService configService() {
-        return ConfigService.create();
-    }
-
-    @Provides
-    @Singleton
-    public Config config(ConfigService configService) {
-        return configService.load();
-    }
+public class SunriseJpUltiLauncherModule extends AbstractModule {
 
     @Provides
     @Singleton
@@ -59,14 +51,26 @@ public class Sunrise2004UltiLauncherModule extends AbstractModule {
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
             WindowService windowService,
-            GameLoginClient<JpApiResponse> gameLoginClient) {
-        return new Sunrise2004Launcher(config, multiControllerService, coreAssigner, windowService, gameLoginClient);
+            GameLoginClient<SunriseApiResponse> gameLoginClient) {
+        return new SunriseJPLauncher(config, multiControllerService, coreAssigner, windowService, gameLoginClient);
     }
 
     @Provides
     @Singleton
-    public GameLoginClient<JpApiResponse> gameLoginClient() {
-        return new Sunrise2004GameLoginClient();
+    public GameLoginClient<SunriseApiResponse> gameLoginClient() {
+        return new JpGameLoginClient();
+    }
+
+    public static String generateFormData(String username, String password, Map<String, String> additionalArgs) {
+        var base = "username=" + URLEncoder.encode(username, StandardCharsets.UTF_8) + "&password="
+                + URLEncoder.encode(password, StandardCharsets.UTF_8);
+        if (additionalArgs.isEmpty()) {
+            return base;
+        }
+        var additionalArgsAsString = additionalArgs.entrySet().stream()
+                .map(e -> e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+                .collect(joining("&"));
+        return base + "&" + additionalArgsAsString;
     }
 
     @Provides

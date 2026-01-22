@@ -1,4 +1,4 @@
-package com.malt.multilaunch.launchers;
+package com.malt.multilaunch.launcher.launchers;
 
 import static java.util.Collections.synchronizedSet;
 
@@ -7,7 +7,7 @@ import com.malt.multilaunch.ffm.ProcessAffinityUtils;
 import com.malt.multilaunch.ffm.ProcessVolumeMuter;
 import com.malt.multilaunch.launcher.GameLoginClient;
 import com.malt.multilaunch.launcher.Launcher;
-import com.malt.multilaunch.login.JpApiResponse;
+import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Sunrise2004Launcher extends Launcher<JpApiResponse> {
+public class Sunrise2004Launcher extends Launcher<SunriseApiResponse> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Sunrise2004Launcher.class);
     private final CoreAssigner coreAssigner;
@@ -34,13 +34,13 @@ public class Sunrise2004Launcher extends Launcher<JpApiResponse> {
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
             WindowService windowService,
-            GameLoginClient<JpApiResponse> gameLoginClient) {
+            GameLoginClient<SunriseApiResponse> gameLoginClient) {
         super(config, multiControllerService, windowService, gameLoginClient);
         this.coreAssigner = coreAssigner;
     }
 
     @Override
-    public Map<String, String> getEnvironmentVariables(JpApiResponse response) {
+    public Map<String, String> getEnvironmentVariables(SunriseApiResponse response) {
         var map = new HashMap<String, String>(2);
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
         map.put("TOONTOWN_PLAYTOKEN", response.cookie());

@@ -107,6 +107,7 @@ public class UltiLauncher extends JFrame {
         windowSwapService.shutdown();
 
         LOG.debug("Saving accounts before exit...");
+        configService.saveConfigToFile(config);
         var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
         try {
             accountService.saveAccounts(accountFilePath, accountService.getLoadedAccounts());
@@ -155,6 +156,7 @@ public class UltiLauncher extends JFrame {
                         item.setSelected(true);
                     }
                     LOG.debug("Selected item {}", item.getText());
+                    config.setLastSelectedServer(item.getText());
                     SwingUtilities.invokeLater(() -> {
                         onWindowClosing();
                         this.dispose();

@@ -2,8 +2,9 @@ package com.malt.multilaunch;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.malt.multilaunch.launchers.Sunrise2004UltiLauncherModule;
-import com.malt.multilaunch.launchers.SunriseJpUltiLauncherModule;
+import com.malt.multilaunch.launcher.launchers.Sunrise2004UltiLauncherModule;
+import com.malt.multilaunch.launcher.launchers.SunriseJpUltiLauncherModule;
+import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.servers.Server;
 import com.malt.multilaunch.ui.UltiLauncher;
 import com.malt.multilaunch.window.DPIUtils;
@@ -11,7 +12,11 @@ import javax.swing.*;
 
 public class Main {
     static void main() {
-        runServerWithName(Server.SUNRISE_JP.canonicalName());
+        var configModule = new ConfigModule();
+        var injector = Guice.createInjector(configModule);
+        var config = injector.getInstance(Config.class);
+        var server = config.lastSelectedServer();
+        runServerWithName(server);
     }
 
     public static void runServerWithName(String name) {
@@ -24,12 +29,11 @@ public class Main {
             e.printStackTrace();
         }
 
-        var injector = Guice.createInjector(module);
+        var injector = Guice.createInjector(module, new ConfigModule());
 
         SwingUtilities.invokeLater(() -> {
             var ultiLauncher = injector.getInstance(UltiLauncher.class);
             ultiLauncher.setVisible(true);
-
             ultiLauncher.initialize();
         });
     }
