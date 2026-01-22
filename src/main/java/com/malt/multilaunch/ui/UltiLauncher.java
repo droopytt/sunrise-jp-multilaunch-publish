@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -136,9 +137,9 @@ public class UltiLauncher extends JFrame {
 
         serverMenu = new JMenu("Server");
 
-        var servers = List.of(
-                new JCheckBoxMenuItem(Server.SUNRISE_JP.canonicalName(), true),
-                new JCheckBoxMenuItem(Server.SUNRISE_2004.canonicalName(), true));
+        var servers = Stream.of(Server.values())
+                .map(server -> new JCheckBoxMenuItem(server.canonicalName(), true))
+                .toList();
 
         servers.stream()
                 .peek(server -> server.setSelected(false))
