@@ -12,7 +12,7 @@ import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.launcher.SunriseGameLoginClient;
 import com.malt.multilaunch.launcher.SunriseJPLauncher;
 import com.malt.multilaunch.login.AccountService;
-import com.malt.multilaunch.login.SunriseApiResponse;
+import com.malt.multilaunch.login.JpApiResponse;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
@@ -63,13 +63,13 @@ public class SunriseJpUltiLauncherModule extends AbstractModule {
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
             WindowService windowService,
-            GameLoginClient<SunriseApiResponse> gameLoginClient) {
+            GameLoginClient<JpApiResponse> gameLoginClient) {
         return new SunriseJPLauncher(config, multiControllerService, coreAssigner, windowService, gameLoginClient);
     }
 
     @Provides
     @Singleton
-    public GameLoginClient<SunriseApiResponse> gameLoginClient() {
+    public GameLoginClient<JpApiResponse> gameLoginClient() {
         return new SunriseGameLoginClient();
     }
 

@@ -5,7 +5,7 @@ import static java.util.Collections.synchronizedSet;
 import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.ffm.ProcessAffinityUtils;
 import com.malt.multilaunch.ffm.ProcessVolumeMuter;
-import com.malt.multilaunch.login.SunriseApiResponse;
+import com.malt.multilaunch.login.JpApiResponse;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
+public class SunriseJPLauncher extends Launcher<JpApiResponse> {
     private static final Logger LOG = LoggerFactory.getLogger(SunriseJPLauncher.class);
     private final CoreAssigner coreAssigner;
 
@@ -29,13 +29,13 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
             WindowService windowService,
-            GameLoginClient<SunriseApiResponse> gameLoginClient) {
+            GameLoginClient<JpApiResponse> gameLoginClient) {
         super(config, multiControllerService, windowService, gameLoginClient);
         this.coreAssigner = coreAssigner;
     }
 
     @Override
-    public Map<String, String> getEnvironmentVariables(SunriseApiResponse response) {
+    public Map<String, String> getEnvironmentVariables(JpApiResponse response) {
         var map = new HashMap<String, String>(2);
         map.put("GAME_SERVER", "unite.sunrise.games:6667");
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");

@@ -59,9 +59,9 @@ public interface ConfigService {
         }
 
         private void validateWorkingDirs(Config config) {
-            if (!config.sunriseWorkingDir().equals(Config.defaultJapanPath())) {
+            if (!config.jpWorkingDir().equals(Config.defaultJapanPath())) {
                 var expectedExecutable = SunriseJPLauncher.jpExecutableName();
-                try (var files = Files.list(config.sunriseWorkingDir())) {
+                try (var files = Files.list(config.jpWorkingDir())) {
                     if (files.map(Path::getFileName).map(Path::toString).noneMatch(p -> p.equals(expectedExecutable))) {
                         adjustWorkingDir(config, expectedExecutable);
                     }
@@ -75,10 +75,8 @@ public interface ConfigService {
             showMessage(
                     config,
                     "Could not find %s executable in %s. Resetting to default location."
-                            .formatted(
-                                    expectedExecutable,
-                                    config.sunriseWorkingDir().toAbsolutePath()));
-            config.setSunriseWorkingDir(Config.defaultJapanPath());
+                            .formatted(expectedExecutable, config.jpWorkingDir().toAbsolutePath()));
+            config.setJpWorkingDir(Config.defaultJapanPath());
         }
 
         private void validateCoreCount(Config config) {

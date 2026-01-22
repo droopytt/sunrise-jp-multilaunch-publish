@@ -14,7 +14,7 @@ public class Config {
     private int startingCore;
     private boolean stickySessions;
     private int volumePercentage;
-    private Path sunriseWorkingDir;
+    private Path jpWorkingDir;
 
     public Config(
             @JsonProperty("enableMultiControllerIntegration") boolean enableMultiControllerIntegration,
@@ -23,13 +23,13 @@ public class Config {
             @JsonProperty("startingCore") int startingCore,
             @JsonProperty("stickySessions") boolean stickySessions,
             @JsonProperty("volumePercentage") int volumePercentage,
-            @JsonProperty("sunriseWorkingDir") Path sunriseWorkingDir) {
+            @JsonProperty("sunriseWorkingDir") Path jpWorkingDir) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
         this.stickySessions = stickySessions;
         this.volumePercentage = volumePercentage;
-        this.sunriseWorkingDir = sunriseWorkingDir == null ? defaultJapanPath() : sunriseWorkingDir;
+        this.jpWorkingDir = jpWorkingDir == null ? defaultJapanPath() : jpWorkingDir;
     }
 
     @JsonGetter
@@ -82,13 +82,13 @@ public class Config {
     }
 
     @JsonGetter
-    public Path sunriseWorkingDir() {
-        return sunriseWorkingDir;
+    public Path jpWorkingDir() {
+        return jpWorkingDir;
     }
 
     @JsonSetter
-    public void setSunriseWorkingDir(Path sunriseWorkingDir) {
-        this.sunriseWorkingDir = sunriseWorkingDir;
+    public void setJpWorkingDir(Path jpWorkingDir) {
+        this.jpWorkingDir = jpWorkingDir;
     }
 
     public static Path defaultJapanPath() {

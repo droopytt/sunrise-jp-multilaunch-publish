@@ -60,7 +60,7 @@ public abstract class Launcher<T extends APIResponse> {
     public abstract String executableName();
 
     public Path workingDir() {
-        return config.sunriseWorkingDir();
+        return config.jpWorkingDir();
     }
 
     public abstract void onProcessEnd(Process process);
