@@ -1,8 +1,8 @@
 package com.malt.multilaunch.launcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.malt.multilaunch.login.JpApiResponse;
-import com.malt.multilaunch.ui.SunriseJpUltiLauncherModule;
+import com.malt.multilaunch.launchers.Sunrise2004ApiResponse;
+import com.malt.multilaunch.launchers.SunriseJpUltiLauncherModule;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -10,9 +10,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
 
-public class SunriseGameLoginClient implements GameLoginClient<JpApiResponse> {
+public class Sunrise2004GameLoginClient implements GameLoginClient<Sunrise2004ApiResponse> {
     @Override
-    public JpApiResponse login(String username, String password, Map<String, String> additionalArgs) {
+    public Sunrise2004ApiResponse login(String username, String password, Map<String, String> additionalArgs) {
         try (var client = HttpClient.newHttpClient()) {
 
             var formData = SunriseJpUltiLauncherModule.generateFormData(username, password, additionalArgs);
@@ -37,7 +37,7 @@ public class SunriseGameLoginClient implements GameLoginClient<JpApiResponse> {
     }
 
     @Override
-    public Class<JpApiResponse> responseType() {
-        return JpApiResponse.class;
+    public Class<Sunrise2004ApiResponse> responseType() {
+        return Sunrise2004ApiResponse.class;
     }
 }

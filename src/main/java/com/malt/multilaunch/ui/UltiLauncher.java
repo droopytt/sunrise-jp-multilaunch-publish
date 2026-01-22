@@ -1,6 +1,7 @@
 package com.malt.multilaunch.ui;
 
 import com.google.inject.Inject;
+import com.malt.multilaunch.Main;
 import com.malt.multilaunch.hotkeys.HotkeyService;
 import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.login.AccountService;
@@ -38,6 +39,8 @@ public class UltiLauncher extends JFrame {
     public static final String WINDOW_TITLE = "Ultilaunch";
     public static final Color GREEN = new Color(0, 128, 0);
     public static final Color STICKY_SESSIONS_OFFLINE_COLOR = new Color(247, 150, 25);
+
+    private Thread shutdownHook;
 
     private JTable accountTable;
     private DefaultTableModel tableModel;
@@ -95,31 +98,25 @@ public class UltiLauncher extends JFrame {
                 onWindowClosing();
             }
         });
-
-        setupShutdownHook();
     }
 
     private void validateWorkingPath() {}
 
-    private void setupShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            LOG.debug("Saving accounts before exit...");
-            var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
-            try {
-                accountService.saveAccounts(accountFilePath, accountService.getLoadedAccounts());
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Failed to save accounts to file: " + e.getMessage(),
-                        "Save Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }));
-    }
-
     private void onWindowClosing() {
         hotkeyService.cleanup();
         windowSwapService.shutdown();
+
+        LOG.debug("Saving accounts before exit...");
+        var accountFilePath = Path.of(launcher.getClass().getSimpleName() + "_accounts.json");
+        try {
+            accountService.saveAccounts(accountFilePath, accountService.getLoadedAccounts());
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Failed to save accounts to file: " + e.getMessage(),
+                    "Save Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void initComponents() {
@@ -145,6 +142,11 @@ public class UltiLauncher extends JFrame {
         servers.stream()
                 .peek(server -> server.setSelected(false))
                 .peek(serverMenu::add)
+                .peek(server -> {
+                    if (server.getText().equals(launcher.canonicalName())) {
+                        server.setSelected(true);
+                    }
+                })
                 .forEach(item -> item.addActionListener(e -> {
                     for (var server : servers) {
                         if (!server.equals(item)) {
@@ -153,6 +155,11 @@ public class UltiLauncher extends JFrame {
                         item.setSelected(true);
                     }
                     LOG.debug("Selected item {}", item.getText());
+                    SwingUtilities.invokeLater(() -> {
+                        onWindowClosing();
+                        this.dispose();
+                        Main.runServerWithName(item.getText());
+                    });
                 }));
 
         menuBar.add(serverMenu);

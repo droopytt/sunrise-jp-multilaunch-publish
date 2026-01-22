@@ -10,6 +10,15 @@ public enum Server {
         this.canonicalName = canonicalName;
     }
 
+    public static Server fromName(String name) {
+        for (var server : Server.values()) {
+            if (server.canonicalName.equals(name)) {
+                return server;
+            }
+        }
+        throw new IllegalArgumentException("No server with canonical name %s".formatted(name));
+    }
+
     public String canonicalName() {
         return canonicalName;
     }

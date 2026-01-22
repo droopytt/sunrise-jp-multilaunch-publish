@@ -1,6 +1,6 @@
 package com.malt.multilaunch.launcher;
 
-import static com.malt.multilaunch.ui.SunriseJpUltiLauncherModule.generateFormData;
+import static com.malt.multilaunch.launchers.SunriseJpUltiLauncherModule.generateFormData;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
