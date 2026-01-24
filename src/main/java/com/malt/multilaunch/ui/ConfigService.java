@@ -1,7 +1,7 @@
 package com.malt.multilaunch.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.malt.multilaunch.launcher.launchers.SunriseJPLauncher;
+import com.malt.multilaunch.launcher.launchers.JPLauncher;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.servers.Server;
 import java.io.IOException;
@@ -69,7 +69,7 @@ public interface ConfigService {
 
         private void validateWorkingDirs(Config config) {
             if (!config.jpWorkingDir().equals(Config.defaultJapanPath())) {
-                var expectedExecutable = SunriseJPLauncher.jpExecutableName();
+                var expectedExecutable = JPLauncher.jpExecutableName();
                 try (var files = Files.list(config.jpWorkingDir())) {
                     if (files.map(Path::getFileName).map(Path::toString).noneMatch(p -> p.equals(expectedExecutable))) {
                         adjustWorkingDir(config, expectedExecutable);

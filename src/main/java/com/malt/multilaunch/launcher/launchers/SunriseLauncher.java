@@ -11,24 +11,24 @@ import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
-import com.malt.multilaunch.servers.Server;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import com.malt.multilaunch.window.WindowService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
-    private static final Logger LOG = LoggerFactory.getLogger(SunriseJPLauncher.class);
-    private final CoreAssigner coreAssigner;
+public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
+    private static final Logger LOG = LoggerFactory.getLogger(SunriseLauncher.class);
+    protected final CoreAssigner coreAssigner;
 
-    public SunriseJPLauncher(
+    public SunriseLauncher(
             Config config,
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
@@ -36,15 +36,6 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
             GameLoginClient<SunriseApiResponse> gameLoginClient) {
         super(config, multiControllerService, windowService, gameLoginClient);
         this.coreAssigner = coreAssigner;
-    }
-
-    @Override
-    public Map<String, String> getEnvironmentVariables(SunriseApiResponse response) {
-        var map = new HashMap<String, String>(3);
-        map.put("GAME_SERVER", "unite.sunrise.games:6667");
-        map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
-        map.put("PLAY_TOKEN", response.cookie());
-        return map;
     }
 
     @Override
@@ -85,25 +76,6 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
                 .flatMap(Optional::stream)
                 .forEach(process ->
                         ProcessVolumeMuter.setProcessVolume(process.pid(), config.volumePercentage() / 100f, false));
-    }
-
-    @Override
-    public List<String> processArgs() {
-        return List.of("launcher.py");
-    }
-
-    @Override
-    public String executableName() {
-        return jpExecutableName();
-    }
-
-    @Override
-    public Path workingDir() {
-        return config.jpWorkingDir();
-    }
-
-    public static String jpExecutableName() {
-        return "py24.exe";
     }
 
     private void waitForLine(List<Process> processes, String targetLine) {
@@ -177,20 +149,5 @@ public class SunriseJPLauncher extends Launcher<SunriseApiResponse> {
         }
 
         LOG.info("All processes ready or timeout reached, returning from method.");
-    }
-
-    @Override
-    protected Map<String, String> additionalLoginArgs() {
-        return Map.of("serverType", "Toontown Japan 2010");
-    }
-
-    @Override
-    public void onProcessEnd(Process process) {
-        coreAssigner.removeAssignedCore(process.pid());
-    }
-
-    @Override
-    public String canonicalName() {
-        return Server.SUNRISE_JP.canonicalName();
     }
 }

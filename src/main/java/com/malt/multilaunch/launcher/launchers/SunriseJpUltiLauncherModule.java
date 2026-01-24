@@ -52,7 +52,7 @@ public class SunriseJpUltiLauncherModule extends AbstractModule {
             CoreAssigner coreAssigner,
             WindowService windowService,
             GameLoginClient<SunriseApiResponse> gameLoginClient) {
-        return new SunriseJPLauncher(config, multiControllerService, coreAssigner, windowService, gameLoginClient);
+        return new JPLauncher(config, multiControllerService, coreAssigner, windowService, gameLoginClient);
     }
 
     @Provides

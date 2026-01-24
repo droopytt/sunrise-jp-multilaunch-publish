@@ -9,14 +9,10 @@ import com.malt.multilaunch.servers.Server;
 import com.malt.multilaunch.window.WindowService;
 import java.nio.file.Path;
 import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class Sunrise2004Launcher extends SunriseLauncher {
+public class JPLauncher extends SunriseLauncher {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Sunrise2004Launcher.class);
-
-    public Sunrise2004Launcher(
+    public JPLauncher(
             Config config,
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
@@ -27,35 +23,35 @@ public class Sunrise2004Launcher extends SunriseLauncher {
 
     @Override
     public Map<String, String> getEnvironmentVariables(SunriseApiResponse response) {
-        var map = new HashMap<String, String>(2);
+        var map = new HashMap<String, String>(3);
+        map.put("GAME_SERVER", "unite.sunrise.games:6667");
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
-        map.put("TOONTOWN_PLAYTOKEN", response.cookie());
-        map.put("GAME2_DONE", "1");
+        map.put("PLAY_TOKEN", response.cookie());
         return map;
     }
 
     @Override
-    protected Map<String, String> additionalLoginArgs() {
-        return Map.of("serverType", "Test Toontown 2004 (sv1.0.10.6.test)");
-    }
-
-    @Override
     public List<String> processArgs() {
-        return List.of("Start.py", "0", "test.toontown.sv10106.sunrise.games:6667", "unite.sunrise.games:4500", "1");
+        return List.of("launcher.py");
     }
 
     @Override
     public String executableName() {
-        return sunrise2004ExecutableName();
+        return jpExecutableName();
     }
 
     @Override
     public Path workingDir() {
-        return config.sunrise2004WorkingDir();
+        return config.jpWorkingDir();
     }
 
-    public static String sunrise2004ExecutableName() {
-        return "python.exe";
+    public static String jpExecutableName() {
+        return "py24.exe";
+    }
+
+    @Override
+    protected Map<String, String> additionalLoginArgs() {
+        return Map.of("serverType", "Toontown Japan 2010");
     }
 
     @Override
@@ -65,6 +61,6 @@ public class Sunrise2004Launcher extends SunriseLauncher {
 
     @Override
     public String canonicalName() {
-        return Server.SUNRISE_2004.canonicalName();
+        return Server.SUNRISE_JP.canonicalName();
     }
 }
