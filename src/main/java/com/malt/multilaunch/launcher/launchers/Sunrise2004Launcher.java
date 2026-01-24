@@ -9,12 +9,8 @@ import com.malt.multilaunch.servers.Server;
 import com.malt.multilaunch.window.WindowService;
 import java.nio.file.Path;
 import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Sunrise2004Launcher extends SunriseLauncher {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Sunrise2004Launcher.class);
 
     public Sunrise2004Launcher(
             Config config,

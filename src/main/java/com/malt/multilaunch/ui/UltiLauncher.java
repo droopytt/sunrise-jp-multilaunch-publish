@@ -373,6 +373,10 @@ public class UltiLauncher extends JFrame {
                     })
                     .exceptionally(throwable -> {
                         LOG.error("Error occurred {}", throwable.getMessage());
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Failed to launch %s - is it installed?"
+                                        .formatted(this.launcher.getClass().getSimpleName()));
                         return null;
                     });
         });
