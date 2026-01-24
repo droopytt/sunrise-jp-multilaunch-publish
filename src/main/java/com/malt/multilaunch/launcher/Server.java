@@ -1,4 +1,4 @@
-package com.malt.multilaunch.servers;
+package com.malt.multilaunch.launcher;
 
 public enum Server {
     SUNRISE_JP("Sunrise JP 2010"),

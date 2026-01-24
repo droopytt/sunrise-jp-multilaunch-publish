@@ -2,7 +2,7 @@ package com.malt.multilaunch.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.malt.multilaunch.model.Config;
-import com.malt.multilaunch.servers.Server;
+import com.malt.multilaunch.launcher.Server;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,9 +1,10 @@
-package com.malt.multilaunch.launcher.launchers;
+package com.malt.multilaunch.launcher.launchers.test2004;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.launcher.*;
+import com.malt.multilaunch.launcher.launchers.SunriseLauncherModule;
 import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;

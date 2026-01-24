@@ -2,10 +2,10 @@ package com.malt.multilaunch;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.malt.multilaunch.launcher.launchers.Sunrise2004UltiLauncherModule;
-import com.malt.multilaunch.launcher.launchers.SunriseJpUltiLauncherModule;
+import com.malt.multilaunch.launcher.launchers.test2004.Sunrise2004UltiLauncherModule;
+import com.malt.multilaunch.launcher.launchers.jp.SunriseJpUltiLauncherModule;
 import com.malt.multilaunch.model.Config;
-import com.malt.multilaunch.servers.Server;
+import com.malt.multilaunch.launcher.Server;
 import com.malt.multilaunch.ui.UltiLauncher;
 import com.malt.multilaunch.window.DPIUtils;
 import javax.swing.*;

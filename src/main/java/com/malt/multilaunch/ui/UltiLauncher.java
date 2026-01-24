@@ -8,7 +8,7 @@ import com.malt.multilaunch.login.AccountService;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
-import com.malt.multilaunch.servers.Server;
+import com.malt.multilaunch.launcher.Server;
 import com.malt.multilaunch.window.WindowSwapService;
 import com.malt.multilaunch.window.WindowUtils;
 import java.awt.*;
