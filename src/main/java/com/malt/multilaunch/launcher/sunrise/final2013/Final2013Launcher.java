@@ -57,9 +57,4 @@ class Final2013Launcher extends SunriseLauncher {
     public String canonicalName() {
         return Server.SUNRISE_FINAL_2013.canonicalName();
     }
-
-    @Override
-    protected String targetAvatarLine() {
-        return AVATAR_CHOOSER_LINE;
-    }
 }

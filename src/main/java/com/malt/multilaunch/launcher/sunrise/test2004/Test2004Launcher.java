@@ -27,6 +27,7 @@ class Test2004Launcher extends SunriseLauncher {
         var map = new HashMap<String, String>(2);
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
         map.put("TOONTOWN_PLAYTOKEN", response.cookie());
+        map.put("GAME2_DONE", "1");
         return map;
     }
 

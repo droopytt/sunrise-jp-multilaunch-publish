@@ -2,6 +2,7 @@ package com.malt.multilaunch.jna;
 
 import com.sun.jna.Native;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
+import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
 import org.slf4j.Logger;
@@ -19,6 +20,9 @@ public class ProcessAffinityUtils {
         HANDLE OpenProcess(int dwDesiredAccess, boolean bInheritHandle, int dwProcessId);
 
         boolean SetProcessAffinityMask(HANDLE hProcess, long dwProcessAffinityMask);
+
+        boolean GetProcessAffinityMask(
+                HANDLE hProcess, LongByReference lpProcessAffinityMask, LongByReference lpSystemAffinityMask);
 
         boolean CloseHandle(HANDLE hObject);
     }
@@ -43,5 +47,41 @@ public class ProcessAffinityUtils {
         } finally {
             Kernel32.INSTANCE.CloseHandle(handle);
         }
+    }
+
+    public static int getAffinity(long pid) {
+        HANDLE handle = Kernel32.INSTANCE.OpenProcess(PROCESS_QUERY_INFORMATION, false, (int) pid);
+
+        if (handle == null) {
+            throw new RuntimeException("Failed to open process: " + pid);
+        }
+
+        try {
+            LongByReference processAffinityMask = new LongByReference();
+            LongByReference systemAffinityMask = new LongByReference();
+
+            boolean success = Kernel32.INSTANCE.GetProcessAffinityMask(handle, processAffinityMask, systemAffinityMask);
+
+            if (!success) {
+                throw new RuntimeException("GetProcessAffinityMask failed for PID " + pid);
+            }
+
+            long mask = processAffinityMask.getValue();
+            return affinityMaskToCoreNumber(mask);
+        } finally {
+            Kernel32.INSTANCE.CloseHandle(handle);
+        }
+    }
+
+    private static int affinityMaskToCoreNumber(long mask) {
+        if (mask == 0) {
+            return -1;
+        }
+
+        if (Long.bitCount(mask) > 1) {
+            return Long.numberOfTrailingZeros(mask);
+        }
+
+        return Long.numberOfTrailingZeros(mask);
     }
 }

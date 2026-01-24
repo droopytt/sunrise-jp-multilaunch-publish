@@ -4,6 +4,7 @@ import com.malt.multilaunch.ui.UltiLauncher;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.LPARAM;
 import com.sun.jna.platform.win32.WinDef.RECT;
@@ -100,5 +101,27 @@ public final class WindowUtils {
                 },
                 null);
         return result[0];
+    }
+
+    public static boolean isWindowReady(long pid) {
+        var hwnd = getWindowHandleForProcessId(pid);
+        if (hwnd == 0) {
+            return false;
+        }
+
+        HWND handle = new HWND(new Pointer(hwnd));
+        return User32.INSTANCE.IsWindowVisible(handle) && isWindowRendered(handle);
+    }
+
+    private static boolean isWindowRendered(HWND hwnd) {
+        WinDef.RECT rect = new WinDef.RECT();
+        if (!User32.INSTANCE.GetWindowRect(hwnd, rect)) {
+            return false;
+        }
+
+        int width = rect.right - rect.left;
+        int height = rect.bottom - rect.top;
+
+        return width > 0 && height > 0;
     }
 }

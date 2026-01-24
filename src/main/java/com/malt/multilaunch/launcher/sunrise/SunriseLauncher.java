@@ -13,9 +13,7 @@ import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import com.malt.multilaunch.window.WindowService;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.malt.multilaunch.window.WindowUtils;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +46,7 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
                             .flatMap(Optional::stream)
                             .toList();
 
-                    waitForLine(processes, targetAvatarLine());
+                    awaitReady(processes);
                     return processes;
                 })
                 .thenAccept(processes -> {
@@ -60,10 +58,6 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
 
                     CompletableFuture.runAsync(() -> setVolumeForAccounts(activeAccountManager, config));
                 });
-    }
-
-    protected String targetAvatarLine() {
-        return "Using gameServer from launcher";
     }
 
     private void setVolumeForAccounts(ActiveAccountManager activeAccountManager, Config config) {
@@ -83,51 +77,23 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
                         ProcessVolumeMuter.setProcessVolume(process.pid(), config.volumePercentage() / 100f, false));
     }
 
-    private void waitForLine(List<Process> processes, String targetLine) {
+    private void awaitReady(List<Process> processes) {
         var doneProcesses = synchronizedSet(new HashSet<Process>());
 
         for (var process : processes) {
             int coreIndex = coreAssigner.getNextAvailableCore(process.pid());
-            var waitUntil = Instant.now().plusSeconds(90);
             new Thread(
                             () -> {
                                 try {
-                                    var stdoutReader =
-                                            new BufferedReader(new InputStreamReader(process.getInputStream()));
-                                    var stderrReader =
-                                            new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                                    boolean affinitySet = false;
-
-                                    LOG.trace("Process is alive: {} {}", process.pid(), process.isAlive());
-                                    while (process.isAlive()) {
-                                        while (stdoutReader.ready()) {
-                                            var line = stdoutReader.readLine();
-                                            if (line == null) {
-                                                break;
-                                            }
-
-                                            if (!affinitySet && Instant.now().isBefore(waitUntil)) {
-                                                LOG.trace("PID: {}: {}", process.pid(), line);
-                                            }
-
-                                            if (!affinitySet && line.contains(targetLine)) {
-                                                ProcessAffinityUtils.setAffinity(process.pid(), coreIndex);
-                                                doneProcesses.add(process);
-                                                affinitySet = true;
-                                            }
-                                        }
-
-                                        while (stderrReader.ready()) {
-                                            stderrReader.readLine();
-                                        }
-
+                                    LOG.debug("Waiting for process window to be ready: {}", process.pid());
+                                    while (!WindowUtils.isWindowReady(process.pid())) {
                                         Thread.sleep(10);
                                     }
-
-                                    while (stdoutReader.readLine() != null) {}
-                                    while (stderrReader.readLine() != null) {}
-
-                                } catch (IOException | InterruptedException ignored) {
+                                    LOG.debug("Setting affinity for process {}", process.pid());
+                                    Thread.sleep(2000);
+                                    ProcessAffinityUtils.setAffinity(process.pid(), coreIndex);
+                                    doneProcesses.add(process);
+                                } catch (InterruptedException ignored) {
                                 }
                             },
                             "Awaiter-Thread-%d".formatted(process.pid()))
@@ -153,7 +119,6 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
         } else {
             LOG.info("Did not manage to assign cores before timer expires");
         }
-
         LOG.info("All processes ready or timeout reached, returning from method.");
     }
 

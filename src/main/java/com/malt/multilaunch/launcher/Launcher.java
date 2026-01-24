@@ -32,7 +32,11 @@ public abstract class Launcher<T extends APIResponse> {
     public Process startGame(Path workingDir, Map<String, String> environmentVars) throws IOException {
         var exePath = workingDir.resolve(executableName()).toAbsolutePath().toString();
         var args = Stream.concat(Stream.of(exePath), processArgs().stream()).toList();
-        var processBuilder = new ProcessBuilder(args).directory(workingDir.toFile());
+        var processBuilder = new ProcessBuilder(args)
+                .directory(workingDir.toFile())
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD);
+
         var allEnvironmentVars = processBuilder.environment();
         allEnvironmentVars.putAll(environmentVars);
         return processBuilder.start();
