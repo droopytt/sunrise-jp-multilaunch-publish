@@ -3,6 +3,7 @@ package com.malt.multilaunch;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.malt.multilaunch.launcher.Server;
+import com.malt.multilaunch.launcher.sunrise.brazil.BrazilModule;
 import com.malt.multilaunch.launcher.sunrise.final2013.Final2013Module;
 import com.malt.multilaunch.launcher.sunrise.jp.JpModule;
 import com.malt.multilaunch.launcher.sunrise.test2004.Test2004Module;
@@ -54,6 +55,9 @@ public class Main {
             }
             case SUNRISE_TEST_2012 -> {
                 return new Test2012Module();
+            }
+            case SUNRISE_BRAZIL -> {
+                return new BrazilModule();
             }
         }
         throw new IllegalArgumentException("No module resolvable from name %s".formatted(name));

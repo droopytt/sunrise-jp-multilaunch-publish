@@ -46,7 +46,8 @@ public interface ConfigService {
                             Config.defaultJapanPath(),
                             Config.defaultSunrise2004Path(),
                             Config.defaultFinal2013Path(),
-                            Config.defaultTest2012Path());
+                            Config.defaultTest2012Path(),
+                            Config.defaultBrazilPath());
                     OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), value);
                 } catch (IOException e) {
                     throw new RuntimeException(e);

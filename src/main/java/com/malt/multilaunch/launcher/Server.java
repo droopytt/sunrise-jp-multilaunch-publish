@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 public enum Server {
     SUNRISE_JP("JP 2010"),
     SUNRISE_2004("Test 2004"),
+    SUNRISE_BRAZIL("Brazil"),
     SUNRISE_TEST_2012("Test 2012"),
     SUNRISE_FINAL_2013("Final 2013");
 

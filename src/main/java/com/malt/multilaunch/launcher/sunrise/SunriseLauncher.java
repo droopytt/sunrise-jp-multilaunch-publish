@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
-    public static final String AVATAR_CHOOSER_LINE = "StateData: AvatarChooser.enter";
     private static final Logger LOG = LoggerFactory.getLogger(SunriseLauncher.class);
     protected final CoreAssigner coreAssigner;
 

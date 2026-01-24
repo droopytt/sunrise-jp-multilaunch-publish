@@ -20,6 +20,7 @@ public class Config {
     private Path final2013WorkingDir;
     private String lastSelectedServer;
     private Path test2012WorkingDir;
+    private Path brazilWorkingDir;
 
     public Config(
             @JsonProperty("enableMultiControllerIntegration") boolean enableMultiControllerIntegration,
@@ -32,7 +33,8 @@ public class Config {
             @JsonProperty("sunriseJpWorkingDir") Path jpWorkingDir,
             @JsonProperty("sunrise2004WorkingDir") Path sunrise2004WorkingDir,
             @JsonProperty("final2013WorkingDir") Path final2013WorkingDir,
-            @JsonProperty("setTest2012WorkingDir") Path test2012WorkingDir) {
+            @JsonProperty("test2012WorkingDir") Path test2012WorkingDir,
+            @JsonProperty("brazilWorkingDir") Path brazilWorkingDir) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
@@ -43,6 +45,7 @@ public class Config {
         this.sunrise2004WorkingDir = sunrise2004WorkingDir == null ? defaultSunrise2004Path() : sunrise2004WorkingDir;
         this.final2013WorkingDir = final2013WorkingDir == null ? defaultFinal2013Path() : final2013WorkingDir;
         this.test2012WorkingDir = test2012WorkingDir == null ? defaultTest2012Path() : test2012WorkingDir;
+        this.brazilWorkingDir = brazilWorkingDir == null ? defaultBrazilPath() : brazilWorkingDir;
     }
 
     @JsonGetter
@@ -115,6 +118,16 @@ public class Config {
     }
 
     @JsonGetter
+    public Path brazilWorkingDir() {
+        return brazilWorkingDir;
+    }
+
+    @JsonSetter
+    public void setBrazilWorkingDir(Path brazilWorkingDir) {
+        this.brazilWorkingDir = brazilWorkingDir;
+    }
+
+    @JsonGetter
     public Path sunrise2004WorkingDir() {
         return sunrise2004WorkingDir;
     }
@@ -147,6 +160,19 @@ public class Config {
     public static Path defaultJapanPath() {
         var appData = System.getenv("LOCALAPPDATA");
         return Paths.get(appData, "SunriseGames", "Toontown", "sv1.2.39.5", "clients", "Toontown_JP");
+    }
+
+    public static Path defaultBrazilPath() {
+        var appData = System.getenv("LOCALAPPDATA");
+        return Paths.get(
+                appData,
+                "SunriseGames",
+                "Toontown",
+                "sv1.4.40.32",
+                "Toontown",
+                "sv1.4.40.32",
+                "clients",
+                "Toontown_BR");
     }
 
     public static Path defaultFinal2013Path() {
