@@ -19,6 +19,7 @@ public class Config {
     private Path sunrise2004WorkingDir;
     private Path final2013WorkingDir;
     private String lastSelectedServer;
+    private Path test2012WorkingDir;
 
     public Config(
             @JsonProperty("enableMultiControllerIntegration") boolean enableMultiControllerIntegration,
@@ -30,7 +31,8 @@ public class Config {
             @JsonProperty("lastSelectedServer") String lastSelectedServer,
             @JsonProperty("sunriseJpWorkingDir") Path jpWorkingDir,
             @JsonProperty("sunrise2004WorkingDir") Path sunrise2004WorkingDir,
-            @JsonProperty("final2013WorkingDir") Path final2013WorkingDir) {
+            @JsonProperty("final2013WorkingDir") Path final2013WorkingDir,
+            @JsonProperty("setTest2012WorkingDir") Path test2012WorkingDir) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
@@ -40,6 +42,7 @@ public class Config {
         this.jpWorkingDir = jpWorkingDir == null ? defaultJapanPath() : jpWorkingDir;
         this.sunrise2004WorkingDir = sunrise2004WorkingDir == null ? defaultSunrise2004Path() : sunrise2004WorkingDir;
         this.final2013WorkingDir = final2013WorkingDir == null ? defaultFinal2013Path() : final2013WorkingDir;
+        this.test2012WorkingDir = test2012WorkingDir == null ? defaultTest2012Path() : test2012WorkingDir;
     }
 
     @JsonGetter
@@ -102,6 +105,16 @@ public class Config {
     }
 
     @JsonGetter
+    public Path test2012WorkingDir() {
+        return test2012WorkingDir;
+    }
+
+    @JsonSetter
+    public void setTest2012WorkingDir(Path test2012WorkingDir) {
+        this.test2012WorkingDir = test2012WorkingDir;
+    }
+
+    @JsonGetter
     public Path sunrise2004WorkingDir() {
         return sunrise2004WorkingDir;
     }
@@ -116,14 +129,14 @@ public class Config {
         return final2013WorkingDir;
     }
 
-    @JsonSetter
-    public void setLastSelectedServer(String lastSelectedServer) {
-        this.lastSelectedServer = lastSelectedServer;
-    }
-
     @JsonGetter
     public String lastSelectedServer() {
         return lastSelectedServer;
+    }
+
+    @JsonSetter
+    public void setLastSelectedServer(String lastSelectedServer) {
+        this.lastSelectedServer = lastSelectedServer;
     }
 
     public static Path defaultSunrise2004Path() {
@@ -138,5 +151,9 @@ public class Config {
 
     public static Path defaultFinal2013Path() {
         return Paths.get("C:", "Program Files (x86)", "Disney", "Disney Online", "ToontownOnline");
+    }
+
+    public static Path defaultTest2012Path() {
+        return Paths.get("C:", "Program Files (x86)", "Disney", "Disney Online", "ToontownOnline_TEST");
     }
 }

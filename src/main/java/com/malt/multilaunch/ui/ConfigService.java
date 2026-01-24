@@ -45,7 +45,8 @@ public interface ConfigService {
                             Server.SUNRISE_JP.canonicalName(),
                             Config.defaultJapanPath(),
                             Config.defaultSunrise2004Path(),
-                            Config.defaultFinal2013Path());
+                            Config.defaultFinal2013Path(),
+                            Config.defaultTest2012Path());
                     OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), value);
                 } catch (IOException e) {
                     throw new RuntimeException(e);

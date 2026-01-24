@@ -1,4 +1,4 @@
-package com.malt.multilaunch.launcher.sunrise.final2013;
+package com.malt.multilaunch.launcher.sunrise.test2004;
 
 import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.launcher.GameLoginClient;
@@ -9,13 +9,11 @@ import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.window.WindowService;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-class Final2013Launcher extends SunriseLauncher {
+class Test2004Launcher extends SunriseLauncher {
 
-    public Final2013Launcher(
+    public Test2004Launcher(
             Config config,
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
@@ -25,41 +23,35 @@ class Final2013Launcher extends SunriseLauncher {
     }
 
     @Override
-    protected Map<String, String> additionalLoginArgs() {
-        return Map.of("serverType", "Final Toontown");
-    }
-
-    @Override
     public Map<String, String> getEnvironmentVariables(SunriseApiResponse response) {
-        var map = new HashMap<String, String>(3);
-        map.put("GAME_SERVER", "unite.sunrise.games:6667");
+        var map = new HashMap<String, String>(2);
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
-        map.put("LOGIN_TOKEN", response.cookie());
+        map.put("TOONTOWN_PLAYTOKEN", response.cookie());
         return map;
     }
 
     @Override
+    protected Map<String, String> additionalLoginArgs() {
+        return Map.of("serverType", "Test Toontown 2004 (sv1.0.10.6.test)");
+    }
+
+    @Override
     public List<String> processArgs() {
-        return List.of();
+        return List.of("Start.py", "0", "test.toontown.sv10106.sunrise.games:6667", "unite.sunrise.games:4500", "1");
     }
 
     @Override
     public String executableName() {
-        return "Toontown.exe";
+        return "python.exe";
     }
 
     @Override
     public Path workingDir() {
-        return config.final2013WorkingDir();
+        return config.sunrise2004WorkingDir();
     }
 
     @Override
     public String canonicalName() {
-        return Server.SUNRISE_FINAL_2013.canonicalName();
-    }
-
-    @Override
-    protected String targetAvatarLine() {
-        return AVATAR_CHOOSER_LINE;
+        return Server.SUNRISE_2004.canonicalName();
     }
 }

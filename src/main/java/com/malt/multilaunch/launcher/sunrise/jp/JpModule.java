@@ -10,7 +10,7 @@ import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.window.WindowService;
 
-public class SunriseJpUltiLauncherModule extends SunriseLauncherModule {
+public class JpModule extends SunriseLauncherModule {
 
     @Provides
     @Singleton

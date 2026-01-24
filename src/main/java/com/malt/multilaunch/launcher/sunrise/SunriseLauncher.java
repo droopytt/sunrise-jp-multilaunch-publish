@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
+    public static final String AVATAR_CHOOSER_LINE = "StateData: AvatarChooser.enter";
     private static final Logger LOG = LoggerFactory.getLogger(SunriseLauncher.class);
     protected final CoreAssigner coreAssigner;
 
@@ -62,7 +63,7 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
     }
 
     protected String targetAvatarLine() {
-        return "Using gameServer from launcher:";
+        return "Using gameServer from launcher";
     }
 
     private void setVolumeForAccounts(ActiveAccountManager activeAccountManager, Config config) {
@@ -97,7 +98,9 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
                                             new BufferedReader(new InputStreamReader(process.getErrorStream()));
                                     boolean affinitySet = false;
 
+                                    LOG.trace("Process is alive: {} {}", process.pid(), process.isAlive());
                                     while (process.isAlive()) {
+                                        LOG.trace("Stdout reader ready: {}", stdoutReader.ready());
                                         while (stdoutReader.ready()) {
                                             var line = stdoutReader.readLine();
                                             if (line == null) {

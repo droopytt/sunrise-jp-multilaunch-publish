@@ -4,8 +4,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.malt.multilaunch.launcher.Server;
 import com.malt.multilaunch.launcher.sunrise.final2013.Final2013Module;
-import com.malt.multilaunch.launcher.sunrise.jp.SunriseJpUltiLauncherModule;
-import com.malt.multilaunch.launcher.sunrise.test2004.Sunrise2004UltiLauncherModule;
+import com.malt.multilaunch.launcher.sunrise.jp.JpModule;
+import com.malt.multilaunch.launcher.sunrise.test2004.Test2004Module;
+import com.malt.multilaunch.launcher.sunrise.test2012.Test2012Module;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.ui.UltiLauncher;
 import com.malt.multilaunch.window.DPIUtils;
@@ -43,13 +44,16 @@ public class Main {
         var server = Server.fromName(name);
         switch (server) {
             case SUNRISE_JP -> {
-                return new SunriseJpUltiLauncherModule();
+                return new JpModule();
             }
             case SUNRISE_2004 -> {
-                return new Sunrise2004UltiLauncherModule();
+                return new Test2004Module();
             }
             case SUNRISE_FINAL_2013 -> {
                 return new Final2013Module();
+            }
+            case SUNRISE_TEST_2012 -> {
+                return new Test2012Module();
             }
         }
         throw new IllegalArgumentException("No module resolvable from name %s".formatted(name));
