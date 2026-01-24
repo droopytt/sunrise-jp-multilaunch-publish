@@ -1,4 +1,4 @@
-package com.malt.multilaunch.ffm;
+package com.malt.multilaunch.jna;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

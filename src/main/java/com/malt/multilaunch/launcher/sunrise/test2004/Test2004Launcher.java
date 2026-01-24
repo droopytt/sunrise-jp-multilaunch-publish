@@ -1,6 +1,6 @@
 package com.malt.multilaunch.launcher.sunrise.test2004;
 
-import com.malt.multilaunch.ffm.CoreAssigner;
+import com.malt.multilaunch.jna.CoreAssigner;
 import com.malt.multilaunch.launcher.GameLoginClient;
 import com.malt.multilaunch.launcher.Server;
 import com.malt.multilaunch.launcher.sunrise.SunriseLauncher;

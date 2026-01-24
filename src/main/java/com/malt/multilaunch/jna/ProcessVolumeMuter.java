@@ -1,4 +1,4 @@
-package com.malt.multilaunch.ffm;
+package com.malt.multilaunch.jna;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;

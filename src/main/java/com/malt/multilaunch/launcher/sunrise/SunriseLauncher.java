@@ -2,9 +2,9 @@ package com.malt.multilaunch.launcher.sunrise;
 
 import static java.util.Collections.synchronizedSet;
 
-import com.malt.multilaunch.ffm.CoreAssigner;
-import com.malt.multilaunch.ffm.ProcessAffinityUtils;
-import com.malt.multilaunch.ffm.ProcessVolumeMuter;
+import com.malt.multilaunch.jna.CoreAssigner;
+import com.malt.multilaunch.jna.ProcessAffinityUtils;
+import com.malt.multilaunch.jna.ProcessVolumeMuter;
 import com.malt.multilaunch.launcher.GameLoginClient;
 import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.login.SunriseApiResponse;
@@ -100,7 +100,6 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
 
                                     LOG.trace("Process is alive: {} {}", process.pid(), process.isAlive());
                                     while (process.isAlive()) {
-                                        LOG.trace("Stdout reader ready: {}", stdoutReader.ready());
                                         while (stdoutReader.ready()) {
                                             var line = stdoutReader.readLine();
                                             if (line == null) {

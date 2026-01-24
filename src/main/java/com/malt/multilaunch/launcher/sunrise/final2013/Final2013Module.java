@@ -2,7 +2,7 @@ package com.malt.multilaunch.launcher.sunrise.final2013;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.malt.multilaunch.ffm.CoreAssigner;
+import com.malt.multilaunch.jna.CoreAssigner;
 import com.malt.multilaunch.launcher.GameLoginClient;
 import com.malt.multilaunch.launcher.Launcher;
 import com.malt.multilaunch.launcher.sunrise.SunriseLauncherModule;
