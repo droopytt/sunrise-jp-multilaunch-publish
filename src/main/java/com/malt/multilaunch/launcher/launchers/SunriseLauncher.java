@@ -150,4 +150,9 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
 
         LOG.info("All processes ready or timeout reached, returning from method.");
     }
+
+    @Override
+    public void onProcessEnd(Process process) {
+        coreAssigner.removeAssignedCore(process.pid());
+    }
 }

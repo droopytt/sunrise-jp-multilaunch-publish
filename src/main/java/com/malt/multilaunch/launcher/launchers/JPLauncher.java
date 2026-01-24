@@ -37,7 +37,7 @@ public class JPLauncher extends SunriseLauncher {
 
     @Override
     public String executableName() {
-        return jpExecutableName();
+        return "py24.exe";
     }
 
     @Override
@@ -45,18 +45,9 @@ public class JPLauncher extends SunriseLauncher {
         return config.jpWorkingDir();
     }
 
-    public static String jpExecutableName() {
-        return "py24.exe";
-    }
-
     @Override
     protected Map<String, String> additionalLoginArgs() {
         return Map.of("serverType", "Toontown Japan 2010");
-    }
-
-    @Override
-    public void onProcessEnd(Process process) {
-        coreAssigner.removeAssignedCore(process.pid());
     }
 
     @Override

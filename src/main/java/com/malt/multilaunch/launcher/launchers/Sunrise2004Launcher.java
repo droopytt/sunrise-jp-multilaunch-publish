@@ -42,21 +42,12 @@ public class Sunrise2004Launcher extends SunriseLauncher {
 
     @Override
     public String executableName() {
-        return sunrise2004ExecutableName();
+        return "python.exe";
     }
 
     @Override
     public Path workingDir() {
         return config.sunrise2004WorkingDir();
-    }
-
-    public static String sunrise2004ExecutableName() {
-        return "python.exe";
-    }
-
-    @Override
-    public void onProcessEnd(Process process) {
-        coreAssigner.removeAssignedCore(process.pid());
     }
 
     @Override
