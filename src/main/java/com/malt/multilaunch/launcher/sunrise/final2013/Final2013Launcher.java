@@ -1,19 +1,21 @@
-package com.malt.multilaunch.launcher.launchers.jp;
+package com.malt.multilaunch.launcher.sunrise.final2013;
 
 import com.malt.multilaunch.ffm.CoreAssigner;
 import com.malt.multilaunch.launcher.GameLoginClient;
-import com.malt.multilaunch.launcher.launchers.SunriseLauncher;
+import com.malt.multilaunch.launcher.Server;
+import com.malt.multilaunch.launcher.sunrise.SunriseLauncher;
 import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
-import com.malt.multilaunch.launcher.Server;
 import com.malt.multilaunch.window.WindowService;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class JPLauncher extends SunriseLauncher {
+public class Final2013Launcher extends SunriseLauncher {
 
-    public JPLauncher(
+    public Final2013Launcher(
             Config config,
             MultiControllerService multiControllerService,
             CoreAssigner coreAssigner,
@@ -23,36 +25,41 @@ public class JPLauncher extends SunriseLauncher {
     }
 
     @Override
+    protected Map<String, String> additionalLoginArgs() {
+        return Map.of("serverType", "Final Toontown");
+    }
+
+    @Override
     public Map<String, String> getEnvironmentVariables(SunriseApiResponse response) {
         var map = new HashMap<String, String>(3);
         map.put("GAME_SERVER", "unite.sunrise.games:6667");
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
-        map.put("PLAY_TOKEN", response.cookie());
+        map.put("LOGIN_TOKEN", response.cookie());
         return map;
     }
 
     @Override
     public List<String> processArgs() {
-        return List.of("launcher.py");
+        return List.of();
     }
 
     @Override
     public String executableName() {
-        return "py24.exe";
+        return "Toontown.exe";
     }
 
     @Override
     public Path workingDir() {
-        return config.jpWorkingDir();
-    }
-
-    @Override
-    protected Map<String, String> additionalLoginArgs() {
-        return Map.of("serverType", "Toontown Japan 2010");
+        return config.final2013WorkingDir();
     }
 
     @Override
     public String canonicalName() {
-        return Server.SUNRISE_JP.canonicalName();
+        return Server.SUNRISE_FINAL_2013.canonicalName();
+    }
+
+    @Override
+    protected String targetAvatarLine() {
+        return "StateData: AvatarChooser.enter";
     }
 }

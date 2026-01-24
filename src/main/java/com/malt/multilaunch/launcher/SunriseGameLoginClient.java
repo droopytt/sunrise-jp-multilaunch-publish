@@ -1,7 +1,7 @@
 package com.malt.multilaunch.launcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.malt.multilaunch.launcher.launchers.SunriseLauncherModule;
+import com.malt.multilaunch.launcher.sunrise.SunriseLauncherModule;
 import com.malt.multilaunch.login.SunriseApiResponse;
 import java.io.IOException;
 import java.net.URI;

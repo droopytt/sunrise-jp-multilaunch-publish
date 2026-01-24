@@ -2,10 +2,11 @@ package com.malt.multilaunch;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.malt.multilaunch.launcher.launchers.test2004.Sunrise2004UltiLauncherModule;
-import com.malt.multilaunch.launcher.launchers.jp.SunriseJpUltiLauncherModule;
-import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.launcher.Server;
+import com.malt.multilaunch.launcher.sunrise.final2013.Final2013Module;
+import com.malt.multilaunch.launcher.sunrise.jp.SunriseJpUltiLauncherModule;
+import com.malt.multilaunch.launcher.sunrise.test2004.Sunrise2004UltiLauncherModule;
+import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.ui.UltiLauncher;
 import com.malt.multilaunch.window.DPIUtils;
 import javax.swing.*;
@@ -46,6 +47,9 @@ public class Main {
             }
             case SUNRISE_2004 -> {
                 return new Sunrise2004UltiLauncherModule();
+            }
+            case SUNRISE_FINAL_2013 -> {
+                return new Final2013Module();
             }
         }
         throw new IllegalArgumentException("No module resolvable from name %s".formatted(name));

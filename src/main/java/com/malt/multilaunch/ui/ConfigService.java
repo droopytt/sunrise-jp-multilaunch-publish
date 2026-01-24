@@ -1,8 +1,8 @@
 package com.malt.multilaunch.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.launcher.Server;
+import com.malt.multilaunch.model.Config;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,7 +44,8 @@ public interface ConfigService {
                             100,
                             Server.SUNRISE_JP.canonicalName(),
                             Config.defaultJapanPath(),
-                            Config.defaultSunrise2004Path());
+                            Config.defaultSunrise2004Path(),
+                            Config.defaultFinal2013Path());
                     OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), value);
                 } catch (IOException e) {
                     throw new RuntimeException(e);

@@ -1,16 +1,16 @@
-package com.malt.multilaunch.launcher.launchers.test2004;
+package com.malt.multilaunch.launcher.sunrise.jp;
 
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import com.malt.multilaunch.ffm.CoreAssigner;
-import com.malt.multilaunch.launcher.*;
-import com.malt.multilaunch.launcher.launchers.SunriseLauncherModule;
+import com.malt.multilaunch.launcher.GameLoginClient;
+import com.malt.multilaunch.launcher.Launcher;
+import com.malt.multilaunch.launcher.sunrise.SunriseLauncherModule;
 import com.malt.multilaunch.login.SunriseApiResponse;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.window.WindowService;
 
-public class Sunrise2004UltiLauncherModule extends SunriseLauncherModule {
+public class SunriseJpUltiLauncherModule extends SunriseLauncherModule {
 
     @Provides
     @Singleton
@@ -20,6 +20,6 @@ public class Sunrise2004UltiLauncherModule extends SunriseLauncherModule {
             CoreAssigner coreAssigner,
             WindowService windowService,
             GameLoginClient<SunriseApiResponse> gameLoginClient) {
-        return new Sunrise2004Launcher(config, multiControllerService, coreAssigner, windowService, gameLoginClient);
+        return new JPLauncher(config, multiControllerService, coreAssigner, windowService, gameLoginClient);
     }
 }

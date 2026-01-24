@@ -2,7 +2,8 @@ package com.malt.multilaunch.launcher;
 
 public enum Server {
     SUNRISE_JP("Sunrise JP 2010"),
-    SUNRISE_2004("Sunrise 2004");
+    SUNRISE_2004("Sunrise 2004"),
+    SUNRISE_FINAL_2013("Final 2013");
 
     private final String canonicalName;
 

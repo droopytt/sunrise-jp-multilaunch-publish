@@ -1,4 +1,4 @@
-package com.malt.multilaunch.launcher.launchers;
+package com.malt.multilaunch.launcher.sunrise;
 
 import static java.util.Collections.synchronizedSet;
 
@@ -47,7 +47,7 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
                             .flatMap(Optional::stream)
                             .toList();
 
-                    waitForLine(processes, "Using gameServer from launcher:");
+                    waitForLine(processes, targetAvatarLine());
                     return processes;
                 })
                 .thenAccept(processes -> {
@@ -59,6 +59,10 @@ public abstract class SunriseLauncher extends Launcher<SunriseApiResponse> {
 
                     CompletableFuture.runAsync(() -> setVolumeForAccounts(activeAccountManager, config));
                 });
+    }
+
+    protected String targetAvatarLine() {
+        return "Using gameServer from launcher:";
     }
 
     private void setVolumeForAccounts(ActiveAccountManager activeAccountManager, Config config) {

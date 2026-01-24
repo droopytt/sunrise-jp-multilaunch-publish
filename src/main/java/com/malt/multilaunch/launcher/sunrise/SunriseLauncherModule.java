@@ -1,4 +1,4 @@
-package com.malt.multilaunch.launcher.launchers;
+package com.malt.multilaunch.launcher.sunrise;
 
 import static java.util.stream.Collectors.joining;
 

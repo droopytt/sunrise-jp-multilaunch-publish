@@ -17,6 +17,7 @@ public class Config {
     private int volumePercentage;
     private Path jpWorkingDir;
     private Path sunrise2004WorkingDir;
+    private Path final2013WorkingDir;
     private String lastSelectedServer;
 
     public Config(
@@ -28,7 +29,8 @@ public class Config {
             @JsonProperty("volumePercentage") int volumePercentage,
             @JsonProperty("lastSelectedServer") String lastSelectedServer,
             @JsonProperty("sunriseJpWorkingDir") Path jpWorkingDir,
-            @JsonProperty("sunrise2004WorkingDir") Path sunrise2004WorkingDir) {
+            @JsonProperty("sunrise2004WorkingDir") Path sunrise2004WorkingDir,
+            @JsonProperty("final2013WorkingDir") Path final2013WorkingDir) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
@@ -37,6 +39,7 @@ public class Config {
         this.lastSelectedServer = lastSelectedServer == null ? Server.SUNRISE_JP.canonicalName() : lastSelectedServer;
         this.jpWorkingDir = jpWorkingDir == null ? defaultJapanPath() : jpWorkingDir;
         this.sunrise2004WorkingDir = sunrise2004WorkingDir == null ? defaultSunrise2004Path() : sunrise2004WorkingDir;
+        this.final2013WorkingDir = final2013WorkingDir == null ? defaultFinal2013Path() : final2013WorkingDir;
     }
 
     @JsonGetter
@@ -108,6 +111,11 @@ public class Config {
         this.sunrise2004WorkingDir = sunrise2004WorkingDir;
     }
 
+    @JsonGetter
+    public Path final2013WorkingDir() {
+        return final2013WorkingDir;
+    }
+
     @JsonSetter
     public void setLastSelectedServer(String lastSelectedServer) {
         this.lastSelectedServer = lastSelectedServer;
@@ -126,5 +134,9 @@ public class Config {
     public static Path defaultJapanPath() {
         var appData = System.getenv("LOCALAPPDATA");
         return Paths.get(appData, "SunriseGames", "Toontown", "sv1.2.39.5", "clients", "Toontown_JP");
+    }
+
+    public static Path defaultFinal2013Path() {
+        return Paths.get("C:", "Program Files (x86)", "Disney", "Disney Online", "ToontownOnline");
     }
 }
