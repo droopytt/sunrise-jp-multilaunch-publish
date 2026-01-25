@@ -1,11 +1,12 @@
 package com.malt.multilaunch.window;
 
 import com.sun.jna.Native;
-import com.sun.jna.platform.win32.User32;
-import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.win32.StdCallLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 
 public final class DPIUtils {
     private static final Logger LOG = LoggerFactory.getLogger(DPIUtils.class);
@@ -15,8 +16,6 @@ public final class DPIUtils {
 
         boolean SetProcessDPIAware();
 
-        int GetDpiForWindow(HWND hwnd);
-
         int GetSystemMetrics(int nIndex);
     }
 
@@ -25,24 +24,14 @@ public final class DPIUtils {
 
         int SetProcessDpiAwareness(int value);
 
-        int GetDpiForMonitor(
-                com.sun.jna.Pointer hmonitor,
-                int dpiType,
-                com.sun.jna.ptr.IntByReference dpiX,
-                com.sun.jna.ptr.IntByReference dpiY);
     }
 
-    // DPI Awareness values
-    private static final int PROCESS_DPI_UNAWARE = 0;
-    private static final int PROCESS_SYSTEM_DPI_AWARE = 1;
     private static final int PROCESS_PER_MONITOR_DPI_AWARE = 2;
 
-    // System metrics indices
     private static final int SM_CXSCREEN = 0;
     private static final int SM_CYSCREEN = 1;
 
     private static volatile boolean dpiAwarenessSet = false;
-    private static volatile double scalingFactor = 1.0;
 
     private DPIUtils() {}
 
@@ -80,9 +69,6 @@ public final class DPIUtils {
         }
     }
 
-    /**
-     * Gets the actual physical screen dimensions in pixels.
-     */
     public static java.awt.Dimension getPhysicalScreenSize() {
         try {
             int width = User32DPI.INSTANCE.GetSystemMetrics(SM_CXSCREEN);
@@ -91,54 +77,26 @@ public final class DPIUtils {
             return new java.awt.Dimension(width, height);
         } catch (Exception e) {
             LOG.error("Failed to get physical screen size", e);
-            // Fallback to Java's method
-            java.awt.GraphicsDevice gd =
-                    java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            return new java.awt.Dimension(
+            var gd =
+                    GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            return new Dimension(
                     gd.getDisplayMode().getWidth(), gd.getDisplayMode().getHeight());
         }
     }
 
-    /**
-     * Calculates the DPI scaling factor for the given window.
-     */
-    public static double getScalingFactor(HWND hwnd) {
-        try {
-            int dpi = User32DPI.INSTANCE.GetDpiForWindow(hwnd);
-            double factor = dpi / 96.0; // 96 is the standard DPI
-            LOG.debug("DPI for window: {}, scaling factor: {}", dpi, factor);
-            return factor;
-        } catch (Exception e) {
-            LOG.debug("Could not get DPI for window, using default scaling", e);
-            return 1.0;
-        }
-    }
-
-    /**
-     * Gets the primary monitor's DPI scaling factor.
-     */
     public static double getPrimaryMonitorScalingFactor() {
         try {
-            // Get DPI of primary monitor
-            HWND hwnd = User32.INSTANCE.GetDesktopWindow();
-            return getScalingFactor(hwnd);
+            var gd = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice();
+            var gc = gd.getDefaultConfiguration();
+            var tx = gc.getDefaultTransform();
+            double factor = tx.getScaleX();
+            LOG.debug("Primary monitor scaling factor: {}", factor);
+            return factor;
         } catch (Exception e) {
             LOG.debug("Could not get primary monitor scaling factor", e);
             return 1.0;
         }
     }
 
-    /**
-     * Converts scaled coordinates to physical pixels.
-     */
-    public static int toPhysicalPixels(int scaledValue, double scalingFactor) {
-        return (int) Math.round(scaledValue * scalingFactor);
-    }
-
-    /**
-     * Converts physical pixels to scaled coordinates.
-     */
-    public static int toScaledPixels(int physicalValue, double scalingFactor) {
-        return (int) Math.round(physicalValue / scalingFactor);
-    }
 }
