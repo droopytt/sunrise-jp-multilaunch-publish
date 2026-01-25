@@ -153,10 +153,13 @@ public interface WindowService {
                             .getDefaultConfiguration());
 
             var workingArea = new Rectangle(
-                    insets.left,
-                    insets.top,
-                    physicalSize.width - insets.left - insets.right,
-                    physicalSize.height - insets.top - insets.bottom);
+                    (int)(insets.left * scalingFactor),
+                    (int)(insets.top * scalingFactor),
+                    physicalSize.width - (int)((insets.left + insets.right) * scalingFactor),
+                    physicalSize.height - (int)((insets.top + insets.bottom) * scalingFactor)
+            );
+
+            LOG.debug("Working area is {}", workingArea);
 
             var testAccount = accounts.stream()
                     .map(activeAccountManager::findProcessForAccount)
@@ -169,6 +172,8 @@ public interface WindowService {
                 LOG.debug("Offset was suspiciously large ({}), using default value of 16", offset);
                 offset = 16;
             }
+
+            LOG.debug("Using window offset {}", offset);
 
             List<Rectangle> rectangles;
             if (stickySessions) {
@@ -195,6 +200,8 @@ public interface WindowService {
                 LOG.debug("Accounts are {}", accounts);
                 rectangles = createTargetWindowRects(workingArea, accounts.size(), offset);
             }
+
+            LOG.debug("Rectangles are {}", rectangles);
 
             resizeWindowsWithRectangles(accounts, activeAccountManager, rectangles, stickySessions);
         }
