@@ -35,8 +35,8 @@ class Test2012Launcher extends SunriseLauncher {
         map.put("GAME_SERVER", "gameserver.test.sunrise.games:6667");
         map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/test/launcher/");
         map.put("LOGIN_TOKEN", response.cookie());
-        map.put("GAME_WHITELIST_URL","http://download.sunrise.games/launcher/");
-        map.put("GAME_IN_GAME_NEWS_URL","http://download.sunrise.games/toontown/en/gamenews/");
+        map.put("GAME_WHITELIST_URL", "http://download.sunrise.games/launcher/");
+        map.put("GAME_IN_GAME_NEWS_URL", "http://download.sunrise.games/toontown/en/gamenews/");
         return map;
     }
 

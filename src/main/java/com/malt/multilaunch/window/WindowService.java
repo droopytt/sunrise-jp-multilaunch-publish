@@ -153,11 +153,10 @@ public interface WindowService {
                             .getDefaultConfiguration());
 
             var workingArea = new Rectangle(
-                    (int)(insets.left * scalingFactor),
-                    (int)(insets.top * scalingFactor),
-                    physicalSize.width - (int)((insets.left + insets.right) * scalingFactor),
-                    physicalSize.height - (int)((insets.top + insets.bottom) * scalingFactor)
-            );
+                    (int) (insets.left * scalingFactor),
+                    (int) (insets.top * scalingFactor),
+                    physicalSize.width - (int) ((insets.left + insets.right) * scalingFactor),
+                    physicalSize.height - (int) ((insets.top + insets.bottom) * scalingFactor));
 
             LOG.debug("Working area is {}", workingArea);
 

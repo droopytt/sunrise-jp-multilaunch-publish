@@ -34,9 +34,9 @@ class Final2013Launcher extends SunriseLauncher {
         var map = new HashMap<String, String>(3);
         map.put("GAME_SERVER", "unite.sunrise.games:6667");
         map.put("LOGIN_TOKEN", response.cookie());
-        map.put("DOWNLOAD_SERVER","http://download.sunrise.games/launcher/");
-        map.put("GAME_WHITELIST_URL","http://download.sunrise.games/launcher/");
-        map.put("GAME_IN_GAME_NEWS_URL","http://download.sunrise.games/toontown/en/gamenews/");
+        map.put("DOWNLOAD_SERVER", "http://download.sunrise.games/launcher/");
+        map.put("GAME_WHITELIST_URL", "http://download.sunrise.games/launcher/");
+        map.put("GAME_IN_GAME_NEWS_URL", "http://download.sunrise.games/toontown/en/gamenews/");
         return map;
     }
 

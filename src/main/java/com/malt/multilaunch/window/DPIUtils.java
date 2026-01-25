@@ -2,11 +2,10 @@ package com.malt.multilaunch.window;
 
 import com.sun.jna.Native;
 import com.sun.jna.win32.StdCallLibrary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class DPIUtils {
     private static final Logger LOG = LoggerFactory.getLogger(DPIUtils.class);
@@ -23,7 +22,6 @@ public final class DPIUtils {
         Shcore INSTANCE = Native.load("Shcore", Shcore.class);
 
         int SetProcessDpiAwareness(int value);
-
     }
 
     private static final int PROCESS_PER_MONITOR_DPI_AWARE = 2;
@@ -77,8 +75,7 @@ public final class DPIUtils {
             return new java.awt.Dimension(width, height);
         } catch (Exception e) {
             LOG.error("Failed to get physical screen size", e);
-            var gd =
-                    GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            var gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
             return new Dimension(
                     gd.getDisplayMode().getWidth(), gd.getDisplayMode().getHeight());
         }
@@ -86,8 +83,7 @@ public final class DPIUtils {
 
     public static double getPrimaryMonitorScalingFactor() {
         try {
-            var gd = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                    .getDefaultScreenDevice();
+            var gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
             var gc = gd.getDefaultConfiguration();
             var tx = gc.getDefaultTransform();
             double factor = tx.getScaleX();
@@ -98,5 +94,4 @@ public final class DPIUtils {
             return 1.0;
         }
     }
-
 }
