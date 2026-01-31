@@ -7,7 +7,6 @@ import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
-import com.malt.multilaunch.ui.config.KeyCaptureField;
 import com.malt.multilaunch.window.WindowService;
 import com.malt.multilaunch.window.WindowUtils;
 import java.util.HashMap;
@@ -37,12 +36,12 @@ public interface HotkeyService {
         return builder()
                 .withActiveAccountManager(activeAccountManager)
                 .withResetKey(
-                        KeyCaptureField.toNativeKeyCode(
+                        KeyConstants.toNativeKeyCode(
                                 config.hotkeyConfiguration().resetHotkey()),
                         new ResetWindowsAction(
                                 config, activeAccountManager, windowService, multiControllerService, accountSupplier))
                 .withSnapKey(
-                        KeyCaptureField.toNativeKeyCode(
+                        KeyConstants.toNativeKeyCode(
                                 config.hotkeyConfiguration().snapHotkey()),
                         new SnapWindowsAction(config, activeAccountManager, windowService, accountSupplier))
                 .build();
