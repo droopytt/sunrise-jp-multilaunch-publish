@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import com.malt.multilaunch.login.AccountService;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
+import com.malt.multilaunch.model.HotkeyInfo;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import com.malt.multilaunch.window.WindowService;
@@ -36,13 +37,11 @@ public interface HotkeyService {
         return builder()
                 .withActiveAccountManager(activeAccountManager)
                 .withResetKey(
-                        KeyConstants.toNativeKeyCode(
-                                config.hotkeyConfiguration().resetHotkey()),
+                        config.hotkeyConfiguration().resetHotkey(),
                         new ResetWindowsAction(
                                 config, activeAccountManager, windowService, multiControllerService, accountSupplier))
                 .withSnapKey(
-                        KeyConstants.toNativeKeyCode(
-                                config.hotkeyConfiguration().snapHotkey()),
+                        config.hotkeyConfiguration().snapHotkey(),
                         new SnapWindowsAction(config, activeAccountManager, windowService, accountSupplier))
                 .build();
     }
@@ -62,18 +61,21 @@ public interface HotkeyService {
     }
 
     class Builder {
-        private final Map<Integer, Runnable> mappings = new HashMap<>();
+        private final Map<Integer, Runnable> actionMappings = new HashMap<>();
+        private final Map<Integer, Boolean> enabledMappings = new HashMap<>();
         private ActiveAccountManager activeAccountManager;
 
         private Builder() {}
 
-        public Builder withResetKey(int resetKey, Runnable action) {
-            mappings.put(resetKey, action);
+        public Builder withResetKey(HotkeyInfo hotkeyInfo, Runnable action) {
+            actionMappings.put(hotkeyInfo.nativeKey(), action);
+            enabledMappings.put(hotkeyInfo.nativeKey(), hotkeyInfo.enabled());
             return this;
         }
 
-        public Builder withSnapKey(int snapKey, Runnable runnable) {
-            mappings.put(snapKey, runnable);
+        public Builder withSnapKey(HotkeyInfo hotkeyInfo, Runnable runnable) {
+            actionMappings.put(hotkeyInfo.nativeKey(), runnable);
+            enabledMappings.put(hotkeyInfo.nativeKey(), hotkeyInfo.enabled());
             return this;
         }
 
@@ -88,18 +90,22 @@ public interface HotkeyService {
 
         private static class DefaultHotkeyService implements HotkeyService {
             private final Map<Integer, Runnable> mappings;
+            private final Map<Integer, Boolean> enabledMappings;
             private final ActiveAccountManager activeAccountManager;
             private NativeKeyListener nativeKeyListener;
 
             private DefaultHotkeyService(Builder builder) {
-                this.mappings = builder.mappings;
+                this.mappings = builder.actionMappings;
+                this.enabledMappings = builder.enabledMappings;
                 this.activeAccountManager = builder.activeAccountManager;
             }
 
             @Override
             public void handleKey(NativeKeyEvent e) {
                 var runnable = mappings.get(e.getKeyCode());
-                if (nonNull(runnable)) {
+                var enabled = enabledMappings.getOrDefault(e.getKeyCode(), false);
+                LOG.debug("Handling key {} (enabled:{})", e.getKeyCode(), enabled);
+                if (nonNull(runnable) && enabled) {
                     runnable.run();
                 }
             }

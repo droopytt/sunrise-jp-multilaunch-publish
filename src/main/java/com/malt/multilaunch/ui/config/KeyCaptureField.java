@@ -14,8 +14,23 @@ import org.jnativehook.keyboard.NativeKeyEvent;
 
 public class KeyCaptureField extends ConfigField<Integer> {
 
+    private final Function<Config, Boolean> enabledGetter;
+    private final BiConsumer<Config, Boolean> enabledSetter;
+
     KeyCaptureField(String key, String label, Function<Config, Integer> getter, BiConsumer<Config, Integer> setter) {
+        this(key, label, getter, setter, _ -> false, (_, _) -> {});
+    }
+
+    KeyCaptureField(
+            String key,
+            String label,
+            Function<Config, Integer> getter,
+            BiConsumer<Config, Integer> setter,
+            Function<Config, Boolean> enabledGetter,
+            BiConsumer<Config, Boolean> enabledSetter) {
         super(key, label + " ALT +", getter, setter);
+        this.enabledGetter = enabledGetter;
+        this.enabledSetter = enabledSetter;
     }
 
     @Override
@@ -23,16 +38,18 @@ public class KeyCaptureField extends ConfigField<Integer> {
         var panel = new JPanel(new BorderLayout(5, 0));
 
         var textField = new JTextField(15);
-        textField.setText(createTextForNativeKey(KeyConstants.toNativeKeyCode(getter.apply(config))));
         textField.setEditable(false);
         textField.setFocusable(true);
 
-        var clearButton = new JButton("Clear");
-        clearButton.setPreferredSize(new Dimension(60, textField.getPreferredSize().height));
+        var enableCheckbox = new JCheckBox("Enabled", true);
 
         textField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                if (!enableCheckbox.isSelected()) {
+                    return;
+                }
+
                 int javaKeyCode = e.getKeyCode();
                 int nativeKeyCode = KeyConstants.toNativeKeyCode(javaKeyCode);
 
@@ -44,18 +61,21 @@ public class KeyCaptureField extends ConfigField<Integer> {
         textField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                textField.setText("Press a key...");
-                textField.requestFocusInWindow();
+                if (enableCheckbox.isSelected()) {
+                    textField.setText("Press a key...");
+                    textField.requestFocusInWindow();
+                }
             }
         });
 
-        clearButton.addActionListener(e -> {
-            textField.setText("Not set (click to capture)");
-            textField.putClientProperty("keyCode", null);
+        enableCheckbox.addActionListener(e -> {
+            boolean enabled = enableCheckbox.isSelected();
+            textField.setEnabled(enabled);
+            enabledSetter.accept(config, enabled);
         });
 
         panel.add(textField, BorderLayout.CENTER);
-        panel.add(clearButton, BorderLayout.EAST);
+        panel.add(enableCheckbox, BorderLayout.EAST);
 
         return panel;
     }
@@ -69,6 +89,9 @@ public class KeyCaptureField extends ConfigField<Integer> {
         var panel = (JPanel) component;
         var textField = (JTextField) panel.getComponent(0);
         var keyCode = getter.apply(config);
+        var enabled = enabledGetter.apply(config);
+        var checkbox = (JCheckBox) panel.getComponent(1);
+        checkbox.setSelected(enabled);
         if (keyCode != null && keyCode != 0) {
             textField.setText(createTextForNativeKey(KeyConstants.toNativeKeyCode(keyCode)));
             textField.putClientProperty("keyCode", keyCode);

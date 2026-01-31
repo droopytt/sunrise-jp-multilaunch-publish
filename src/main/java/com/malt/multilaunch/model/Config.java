@@ -21,7 +21,7 @@ public class Config {
     private String lastSelectedServer;
     private Path test2012WorkingDir;
     private Path brazilWorkingDir;
-    private HotkeyConfiguration hotkeyConfiguration;
+    private HotkeysConfiguration hotkeysConfiguration;
 
     public Config(
             @JsonProperty("enableMultiControllerIntegration") boolean enableMultiControllerIntegration,
@@ -36,7 +36,7 @@ public class Config {
             @JsonProperty("final2013WorkingDir") Path final2013WorkingDir,
             @JsonProperty("test2012WorkingDir") Path test2012WorkingDir,
             @JsonProperty("brazilWorkingDir") Path brazilWorkingDir,
-            @JsonProperty("hotkeyConfiguration") HotkeyConfiguration hotkeyConfiguration) {
+            @JsonProperty("hotkeyConfiguration") HotkeysConfiguration hotkeysConfiguration) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
@@ -48,8 +48,8 @@ public class Config {
         this.final2013WorkingDir = final2013WorkingDir == null ? defaultFinal2013Path() : final2013WorkingDir;
         this.test2012WorkingDir = test2012WorkingDir == null ? defaultTest2012Path() : test2012WorkingDir;
         this.brazilWorkingDir = brazilWorkingDir == null ? defaultBrazilPath() : brazilWorkingDir;
-        this.hotkeyConfiguration =
-                hotkeyConfiguration == null ? HotkeyConfiguration.createDefault() : hotkeyConfiguration;
+        this.hotkeysConfiguration =
+                hotkeysConfiguration == null ? HotkeysConfiguration.createDefault() : hotkeysConfiguration;
     }
 
     @JsonGetter
@@ -188,12 +188,12 @@ public class Config {
     }
 
     @JsonGetter("hotkeyConfiguration")
-    public HotkeyConfiguration hotkeyConfiguration() {
-        return hotkeyConfiguration;
+    public HotkeysConfiguration hotkeyConfiguration() {
+        return hotkeysConfiguration;
     }
 
     @JsonSetter("hotkeyConfiguration")
-    public void setHotkeyConfiguration(HotkeyConfiguration hotkeyConfiguration) {
-        this.hotkeyConfiguration = hotkeyConfiguration;
+    public void setHotkeyConfiguration(HotkeysConfiguration hotkeysConfiguration) {
+        this.hotkeysConfiguration = hotkeysConfiguration;
     }
 }

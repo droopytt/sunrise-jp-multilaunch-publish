@@ -44,13 +44,17 @@ public class ConfigDialog extends JDialog {
             new KeyCaptureField(
                     "resetKey",
                     "Reset Hotkey:",
-                    config -> config.hotkeyConfiguration().resetHotkey(),
-                    (c, v) -> c.hotkeyConfiguration().setResetHotkey(v)),
+                    config -> config.hotkeyConfiguration().resetHotkey().key(),
+                    (c, v) -> c.hotkeyConfiguration().resetHotkey().setKey(v),
+                    config -> config.hotkeyConfiguration().resetHotkey().enabled(),
+                    (c, v) -> c.hotkeyConfiguration().resetHotkey().setEnabled(v)),
             new KeyCaptureField(
                     "snapKey",
                     "Snap Windows Hotkey:",
-                    config -> config.hotkeyConfiguration().snapHotkey(),
-                    (c, v) -> c.hotkeyConfiguration().setSnapHotkey(v)));
+                    config -> config.hotkeyConfiguration().snapHotkey().key(),
+                    (c, v) -> c.hotkeyConfiguration().snapHotkey().setKey(v),
+                    config -> config.hotkeyConfiguration().snapHotkey().enabled(),
+                    (c, v) -> c.hotkeyConfiguration().snapHotkey().setEnabled(v)));
 
     public ConfigDialog(JFrame parent, Config config) {
         super(parent, "Options", true);

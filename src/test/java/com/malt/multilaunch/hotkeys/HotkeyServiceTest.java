@@ -3,6 +3,7 @@ package com.malt.multilaunch.hotkeys;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import com.malt.multilaunch.model.HotkeyInfo;
 import com.malt.multilaunch.ui.ActiveAccountManager;
 import java.util.concurrent.atomic.AtomicReference;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -15,8 +16,8 @@ class HotkeyServiceTest {
     public void testBasicHotkeys() {
         var mutatedState = new AtomicReference<>();
         var hotkeyService = HotkeyService.builder()
-                .withResetKey(NativeKeyEvent.VC_R, () -> mutatedState.set(new Object()))
-                .withSnapKey(NativeKeyEvent.VC_S, () -> mutatedState.set(null))
+                .withResetKey(new HotkeyInfo(NativeKeyEvent.VC_R, true), () -> mutatedState.set(new Object()))
+                .withSnapKey(new HotkeyInfo(NativeKeyEvent.VC_S, true), () -> mutatedState.set(null))
                 .withActiveAccountManager(ActiveAccountManager.create())
                 .build();
 

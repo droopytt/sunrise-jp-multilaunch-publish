@@ -3,7 +3,7 @@ package com.malt.multilaunch.ui.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.malt.multilaunch.launcher.Server;
 import com.malt.multilaunch.model.Config;
-import com.malt.multilaunch.model.HotkeyConfiguration;
+import com.malt.multilaunch.model.HotkeysConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +47,7 @@ public interface ConfigService {
                             Config.defaultFinal2013Path(),
                             Config.defaultTest2012Path(),
                             Config.defaultBrazilPath(),
-                            HotkeyConfiguration.createDefault());
+                            HotkeysConfiguration.createDefault());
                     OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), value);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
