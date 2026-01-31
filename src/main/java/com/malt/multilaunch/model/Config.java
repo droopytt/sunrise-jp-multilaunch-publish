@@ -21,6 +21,7 @@ public class Config {
     private String lastSelectedServer;
     private Path test2012WorkingDir;
     private Path brazilWorkingDir;
+    private HotkeyConfiguration hotkeyConfiguration;
 
     public Config(
             @JsonProperty("enableMultiControllerIntegration") boolean enableMultiControllerIntegration,
@@ -34,7 +35,8 @@ public class Config {
             @JsonProperty("sunrise2004WorkingDir") Path sunrise2004WorkingDir,
             @JsonProperty("final2013WorkingDir") Path final2013WorkingDir,
             @JsonProperty("test2012WorkingDir") Path test2012WorkingDir,
-            @JsonProperty("brazilWorkingDir") Path brazilWorkingDir) {
+            @JsonProperty("brazilWorkingDir") Path brazilWorkingDir,
+            @JsonProperty("hotkeyConfiguration") HotkeyConfiguration hotkeyConfiguration) {
         this.enableMultiControllerIntegration = enableMultiControllerIntegration;
         this.swapMultiControllerAssignmentsOnWindowSwap = swapMultiControllerAssignmentsOnWindowSwap;
         this.startingCore = startingCore;
@@ -46,6 +48,8 @@ public class Config {
         this.final2013WorkingDir = final2013WorkingDir == null ? defaultFinal2013Path() : final2013WorkingDir;
         this.test2012WorkingDir = test2012WorkingDir == null ? defaultTest2012Path() : test2012WorkingDir;
         this.brazilWorkingDir = brazilWorkingDir == null ? defaultBrazilPath() : brazilWorkingDir;
+        this.hotkeyConfiguration =
+                hotkeyConfiguration == null ? HotkeyConfiguration.createDefault() : hotkeyConfiguration;
     }
 
     @JsonGetter
@@ -181,5 +185,15 @@ public class Config {
 
     public static Path defaultTest2012Path() {
         return Paths.get("C:", "Program Files (x86)", "Disney", "Disney Online", "ToontownOnline_TEST");
+    }
+
+    @JsonGetter("hotkeyConfiguration")
+    public HotkeyConfiguration hotkeyConfiguration() {
+        return hotkeyConfiguration;
+    }
+
+    @JsonSetter("hotkeyConfiguration")
+    public void setHotkeyConfiguration(HotkeyConfiguration hotkeyConfiguration) {
+        this.hotkeyConfiguration = hotkeyConfiguration;
     }
 }

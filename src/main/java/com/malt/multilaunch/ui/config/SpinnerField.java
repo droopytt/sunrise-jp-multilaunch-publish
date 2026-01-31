@@ -1,4 +1,4 @@
-package com.malt.multilaunch.ui;
+package com.malt.multilaunch.ui.config;
 
 import com.malt.multilaunch.model.Config;
 import java.util.function.BiConsumer;
@@ -21,7 +21,7 @@ class SpinnerField extends ConfigField<Integer> {
     }
 
     @Override
-    JComponent createComponent() {
+    JComponent createComponent(Config config) {
         SpinnerNumberModel model = new SpinnerNumberModel(0, min, max, 1);
         JSpinner spinner = new JSpinner(model);
         spinner.setEditor(new JSpinner.NumberEditor(spinner, "0"));

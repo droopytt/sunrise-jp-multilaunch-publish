@@ -9,6 +9,9 @@ import com.malt.multilaunch.login.AccountService;
 import com.malt.multilaunch.model.Account;
 import com.malt.multilaunch.model.Config;
 import com.malt.multilaunch.multicontroller.MultiControllerService;
+import com.malt.multilaunch.ui.config.ConfigDialog;
+import com.malt.multilaunch.ui.config.ConfigService;
+import com.malt.multilaunch.window.WindowService;
 import com.malt.multilaunch.window.WindowSwapService;
 import com.malt.multilaunch.window.WindowUtils;
 import java.awt.*;
@@ -55,12 +58,13 @@ public class UltiLauncher extends JFrame {
 
     // Member fields
     private final Config config;
+    private final WindowService windowService;
     private final Launcher<?> launcher;
     private final ActiveAccountManager activeAccountManager;
     private final WindowSwapService windowSwapService;
     protected final MultiControllerService multiControllerService;
     private final AccountService accountService;
-    private final HotkeyService hotkeyService;
+    private HotkeyService hotkeyService;
     private final ConfigService configService;
     private boolean sessionLocked;
 
@@ -71,6 +75,7 @@ public class UltiLauncher extends JFrame {
             MultiControllerService multiControllerService,
             ActiveAccountManager activeAccountManager,
             WindowSwapService windowSwapService,
+            WindowService windowService,
             Launcher<?> launcher,
             AccountService accountService,
             HotkeyService hotkeyService) {
@@ -79,6 +84,7 @@ public class UltiLauncher extends JFrame {
         this.multiControllerService = multiControllerService;
         this.activeAccountManager = activeAccountManager;
         this.windowSwapService = windowSwapService;
+        this.windowService = windowService;
         this.launcher = launcher;
         this.accountService = accountService;
         this.hotkeyService = hotkeyService;
@@ -388,6 +394,10 @@ public class UltiLauncher extends JFrame {
 
         if (dialog.isSaved()) {
             configService.saveConfigToFile(config);
+            hotkeyService.cleanup();
+            hotkeyService = HotkeyService.create(
+                    accountService, config, activeAccountManager, multiControllerService, windowService);
+            hotkeyService.register();
         }
         if (!config.stickySessions()) {
             sessionLocked = false;

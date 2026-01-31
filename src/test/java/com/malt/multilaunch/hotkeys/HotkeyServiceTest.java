@@ -15,8 +15,8 @@ class HotkeyServiceTest {
     public void testBasicHotkeys() {
         var mutatedState = new AtomicReference<>();
         var hotkeyService = HotkeyService.builder()
-                .withHotkeyMapping(NativeKeyEvent.VC_R, () -> mutatedState.set(new Object()))
-                .withHotkeyMapping(NativeKeyEvent.VC_S, () -> mutatedState.set(null))
+                .withResetKey(NativeKeyEvent.VC_R, () -> mutatedState.set(new Object()))
+                .withSnapKey(NativeKeyEvent.VC_S, () -> mutatedState.set(null))
                 .withActiveAccountManager(ActiveAccountManager.create())
                 .build();
 

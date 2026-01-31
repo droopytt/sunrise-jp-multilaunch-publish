@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.malt.multilaunch.model.Config;
-import com.malt.multilaunch.ui.ConfigService;
+import com.malt.multilaunch.ui.config.ConfigService;
 
 public class ConfigModule extends AbstractModule {
     @Provides

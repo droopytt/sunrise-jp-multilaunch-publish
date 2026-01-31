@@ -1,4 +1,4 @@
-package com.malt.multilaunch.ui;
+package com.malt.multilaunch.ui.config;
 
 import com.malt.multilaunch.model.Config;
 import java.util.function.BiConsumer;
@@ -18,7 +18,7 @@ abstract class ConfigField<T> {
         this.setter = setter;
     }
 
-    abstract JComponent createComponent();
+    abstract JComponent createComponent(Config config);
 
     abstract void loadValue(Config config, JComponent component);
 

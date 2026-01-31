@@ -1,8 +1,9 @@
-package com.malt.multilaunch.ui;
+package com.malt.multilaunch.ui.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.malt.multilaunch.launcher.Server;
 import com.malt.multilaunch.model.Config;
+import com.malt.multilaunch.model.HotkeyConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,8 +18,6 @@ public interface ConfigService {
     }
 
     Config load();
-
-    void validate(Config config);
 
     void saveConfigToFile(Config config);
 
@@ -47,7 +46,8 @@ public interface ConfigService {
                             Config.defaultSunrise2004Path(),
                             Config.defaultFinal2013Path(),
                             Config.defaultTest2012Path(),
-                            Config.defaultBrazilPath());
+                            Config.defaultBrazilPath(),
+                            HotkeyConfiguration.createDefault());
                     OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), value);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -62,8 +62,7 @@ public interface ConfigService {
             }
         }
 
-        @Override
-        public void validate(Config config) {
+        private void validate(Config config) {
             validateCoreCount(config);
             validateWorkingDirs(config);
             saveConfigToFile(config);

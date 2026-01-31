@@ -1,8 +1,11 @@
-package com.malt.multilaunch.ui;
+package com.malt.multilaunch.ui.config;
 
 import com.malt.multilaunch.model.Config;
 import java.awt.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 import javax.swing.*;
 
 public class ConfigDialog extends JDialog {
@@ -11,7 +14,7 @@ public class ConfigDialog extends JDialog {
     private Map<String, JComponent> fieldComponents = new HashMap<>();
     private boolean saved = false;
 
-    private static final java.util.List<ConfigField<?>> GENERAL_FIELDS = new ArrayList<>(Arrays.asList(
+    private static final java.util.List<ConfigField<?>> GENERAL_FIELDS = List.of(
             new CheckBoxField(
                     "multiControllerIntegration",
                     "Enable multicontroller integration:",
@@ -35,7 +38,19 @@ public class ConfigDialog extends JDialog {
                     "startingCore",
                     "Starting core for affinity assignment (Requires restart):",
                     c -> String.valueOf(c.startingCore()),
-                    (c, v) -> c.setStartingCore(Integer.parseInt(v)))));
+                    (c, v) -> c.setStartingCore(Integer.parseInt(v))));
+
+    private static final java.util.List<ConfigField<?>> HOTKEY_FIELDS = List.of(
+            new KeyCaptureField(
+                    "resetKey",
+                    "Reset Hotkey:",
+                    config -> config.hotkeyConfiguration().resetHotkey(),
+                    (c, v) -> c.hotkeyConfiguration().setResetHotkey(v)),
+            new KeyCaptureField(
+                    "snapKey",
+                    "Snap Windows Hotkey:",
+                    config -> config.hotkeyConfiguration().snapHotkey(),
+                    (c, v) -> c.hotkeyConfiguration().setSnapHotkey(v)));
 
     public ConfigDialog(JFrame parent, Config config) {
         super(parent, "Options", true);
@@ -55,6 +70,7 @@ public class ConfigDialog extends JDialog {
         tabbedPane = new JTabbedPane();
 
         tabbedPane.addTab("General", createFieldPanel(GENERAL_FIELDS));
+        tabbedPane.addTab("Hotkeys", createFieldPanel(HOTKEY_FIELDS));
 
         add(tabbedPane, BorderLayout.CENTER);
 
@@ -69,7 +85,7 @@ public class ConfigDialog extends JDialog {
     }
 
     private JPanel createFieldPanel(java.util.List<ConfigField<?>> fields) {
-        JPanel panel = new JPanel(new GridBagLayout());
+        var panel = new JPanel(new GridBagLayout());
         var gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 10, 8, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -84,7 +100,7 @@ public class ConfigDialog extends JDialog {
 
             gbc.gridx = 1;
             gbc.weightx = 1;
-            var component = field.createComponent();
+            var component = field.createComponent(config);
             fieldComponents.put(field.key, component);
             panel.add(component, gbc);
         }
@@ -126,7 +142,7 @@ public class ConfigDialog extends JDialog {
     }
 
     private ConfigField<?> findFieldByKey(String key) {
-        return GENERAL_FIELDS.stream()
+        return Stream.concat(GENERAL_FIELDS.stream(), HOTKEY_FIELDS.stream())
                 .filter(f -> f.key.equals(key))
                 .findFirst()
                 .orElse(null);

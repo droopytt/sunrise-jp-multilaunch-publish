@@ -1,4 +1,4 @@
-package com.malt.multilaunch.ui;
+package com.malt.multilaunch.ui.config;
 
 import com.malt.multilaunch.model.Config;
 import java.util.function.BiConsumer;
@@ -11,7 +11,7 @@ class CheckBoxField extends ConfigField<Boolean> {
     }
 
     @Override
-    JComponent createComponent() {
+    JComponent createComponent(Config config) {
         return new JCheckBox();
     }
 
